@@ -2482,96 +2482,442 @@
     // =========================================================================
     // EXPORT TO EXCEL (DUAL: LIVE FORMULAS & STATIC VALUES)
     // =========================================================================
-    function exportExcel(mode) {
+        function exportExcel(mode) {
       const wb = XLSX.utils.book_new();
 
-      // 1. SUMMARY TAB
-      const summaryRows = [
-        ['PLV BOM COSTING SUMMARY', '', '', '', '', ''],
-        ['Generated:', new Date().toLocaleDateString('id-ID'), 'Mode:', mode.toUpperCase(), '', ''],
-        [],
-        ['NO', 'ITEM CODE', 'ITEM NAME', 'STATUS', 'QTY', 'HPP PABRIK (IDR)', 'MARGIN %', 'SELLING PRICE (IDR)', 'TOTAL PROJECT (IDR)']
+      // =========================================================================
+      // 1. SUMMARY TAB (RINGKASAN PROYEK FURNITURE)
+      // =========================================================================
+      const wsSummary = {};
+      const numFmtIDR = '"Rp "#,##0';
+      const numFmtPct = '0.0%';
+      const numFmtInt = '#,##0';
+      const numFmtDec = '0.0000';
+
+      // Header Banner
+      wsSummary['A1'] = { t: 's', v: 'PT PRAKARSA LEAN VENTURES (PLV) - COSTING & HPP SUMMARY' };
+      wsSummary['A2'] = { t: 's', v: `Dokumen dibuat: ${new Date().toLocaleDateString('id-ID')} ${new Date().toLocaleTimeString('id-ID')} | Mode Export: ${mode.toUpperCase()} | Versi Standard: 2 Okt 2026` };
+
+      // Table Header Row
+      const summaryHeaders = [
+        'NO', 'KODE ITEM', 'NAMA PRODUK FURNITURE', 'STATUS', 'QTY (PCS)', 
+        'VOL KAYU (m³)', 'BIAYA LANGSUNG (IDR)', 'OVERHEAD (IDR)', 
+        'HPP PABRIK (IDR)', 'TARGET MARGIN', 'HARGA JUAL SATUAN (IDR)', 'TOTAL NILAI SPK (IDR)'
       ];
-
-      items.forEach((it, idx) => {
-        const res = BOMEngine.costItem(it, currentRates, norms);
-        const margin = it.target_margin !== undefined ? it.target_margin : 30;
-        const selling = res.unit_cost * (1 + margin / 100);
-        const proj = selling * (it.header.project_qty || 1);
-
-        summaryRows.push([
-          idx + 1,
-          it.header.item_code,
-          it.header.item_name,
-          it.status || 'DRAFT',
-          it.header.project_qty || 1,
-          mode === 'formulas' ? Math.round(res.unit_cost) : Math.round(res.unit_cost),
-          margin / 100,
-          Math.round(selling),
-          Math.round(proj)
-        ]);
+      
+      const summaryStartRow = 5;
+      summaryHeaders.forEach((h, colIdx) => {
+        const cellRef = XLSX.utils.encode_cell({ r: summaryStartRow - 1, c: colIdx });
+        wsSummary[cellRef] = { t: 's', v: h };
       });
 
-      const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
-      XLSX.utils.book_append_sheet(wb, wsSummary, 'SUMMARY');
-
-      // 2. ONE TAB PER ITEM
-      items.forEach(it => {
+      // Populate Items
+      items.forEach((it, idx) => {
+        const r = summaryStartRow + idx;
         const res = BOMEngine.costItem(it, currentRates, norms);
-        const safeSheetName = (it.header.item_code || 'ITEM').replace(/[\/?*\[\]:]/g, '_').slice(0, 31);
-        
-        const itemRows = [
-          ['ITEM CODE:', it.header.item_code, 'OVERALL L (mm):', it.header.overall_l],
-          ['ITEM NAME:', it.header.item_name, 'OVERALL W (mm):', it.header.overall_w],
-          ['PROJECT QTY:', it.header.project_qty || 1, 'OVERALL H (mm):', it.header.overall_h],
-          ['FINISH RECIPE:', it.header.finish_recipe || 'NC NATURAL', 'REVISION:', `Rev ${it.version || 1}`],
-          [],
-          ['--- SOLID WOOD COMPONENTS ---'],
-          ['No', 'Material', 'Component', 'L (mm)', 'W (mm)', 'T (mm)', 'Qty', 'Exposed', 'Curved', 'Tier', 'Subtotal (IDR)']
+        const margin = it.target_margin !== undefined ? it.target_margin : 30;
+        const selling = Math.round(res.unit_cost * (1 + margin / 100));
+        const projTotal = Math.round(selling * (it.header.project_qty || 1));
+        const safeSheetName = (it.header.item_code || `ITEM_${idx+1}`).replace(/[\/?*\[\]:]/g, '_').slice(0, 31);
+
+        // Column 0: No
+        wsSummary[XLSX.utils.encode_cell({ r, c: 0 })] = { t: 'n', v: idx + 1, z: numFmtInt };
+        // Column 1: Kode Item
+        wsSummary[XLSX.utils.encode_cell({ r, c: 1 })] = { t: 's', v: it.header.item_code || '-' };
+        // Column 2: Nama Produk
+        wsSummary[XLSX.utils.encode_cell({ r, c: 2 })] = { t: 's', v: it.header.item_name || '-' };
+        // Column 3: Status
+        wsSummary[XLSX.utils.encode_cell({ r, c: 3 })] = { t: 's', v: it.status || 'DRAFT' };
+        // Column 4: Qty
+        wsSummary[XLSX.utils.encode_cell({ r, c: 4 })] = { t: 'n', v: it.header.project_qty || 1, z: numFmtInt };
+        // Column 5: Vol Kayu Solid m3
+        wsSummary[XLSX.utils.encode_cell({ r, c: 5 })] = { t: 'n', v: Number((res.solid_m3 || 0).toFixed(4)), z: numFmtDec };
+
+        if (mode === 'formulas') {
+          // Live Formulas referencing individual item sheet cells
+          // Biaya Langsung
+          wsSummary[XLSX.utils.encode_cell({ r, c: 6 })] = { 
+            t: 'n', v: Math.round(res.direct), 
+            f: `'${safeSheetName}'!C4`, z: numFmtIDR 
+          };
+          // Overhead
+          wsSummary[XLSX.utils.encode_cell({ r, c: 7 })] = { 
+            t: 'n', v: Math.round(res.overhead), 
+            f: `'${safeSheetName}'!C6`, z: numFmtIDR 
+          };
+          // HPP Pabrik Unit
+          wsSummary[XLSX.utils.encode_cell({ r, c: 8 })] = { 
+            t: 'n', v: Math.round(res.unit_cost), 
+            f: `'${safeSheetName}'!C7`, z: numFmtIDR 
+          };
+          // Target Margin
+          wsSummary[XLSX.utils.encode_cell({ r, c: 9 })] = { t: 'n', v: margin / 100, z: numFmtPct };
+          // Harga Jual Satuan = HPP * (1 + Margin)
+          const hppCell = XLSX.utils.encode_cell({ r, c: 8 });
+          const marginCell = XLSX.utils.encode_cell({ r, c: 9 });
+          wsSummary[XLSX.utils.encode_cell({ r, c: 10 })] = { 
+            t: 'n', v: selling, 
+            f: `${hppCell}*(1+${marginCell})`, z: numFmtIDR 
+          };
+          // Total Nilai SPK = Qty * Harga Jual
+          const qtyCell = XLSX.utils.encode_cell({ r, c: 4 });
+          const sellCell = XLSX.utils.encode_cell({ r, c: 10 });
+          wsSummary[XLSX.utils.encode_cell({ r, c: 11 })] = { 
+            t: 'n', v: projTotal, 
+            f: `${qtyCell}*${sellCell}`, z: numFmtIDR 
+          };
+        } else {
+          // Static Values
+          wsSummary[XLSX.utils.encode_cell({ r, c: 6 })] = { t: 'n', v: Math.round(res.direct), z: numFmtIDR };
+          wsSummary[XLSX.utils.encode_cell({ r, c: 7 })] = { t: 'n', v: Math.round(res.overhead), z: numFmtIDR };
+          wsSummary[XLSX.utils.encode_cell({ r, c: 8 })] = { t: 'n', v: Math.round(res.unit_cost), z: numFmtIDR };
+          wsSummary[XLSX.utils.encode_cell({ r, c: 9 })] = { t: 'n', v: margin / 100, z: numFmtPct };
+          wsSummary[XLSX.utils.encode_cell({ r, c: 10 })] = { t: 'n', v: selling, z: numFmtIDR };
+          wsSummary[XLSX.utils.encode_cell({ r, c: 11 })] = { t: 'n', v: projTotal, z: numFmtIDR };
+        }
+      });
+
+      // Total Bottom Row
+      const totalRow = summaryStartRow + items.length;
+      wsSummary[XLSX.utils.encode_cell({ r: totalRow, c: 2 })] = { t: 's', v: 'TOTAL KESELURUHAN PROYEK' };
+      
+      const qStart = XLSX.utils.encode_cell({ r: summaryStartRow, c: 4 });
+      const qEnd = XLSX.utils.encode_cell({ r: totalRow - 1, c: 4 });
+      wsSummary[XLSX.utils.encode_cell({ r: totalRow, c: 4 })] = { 
+        t: 'n', v: items.reduce((s, it) => s + (it.header.project_qty || 1), 0),
+        f: mode === 'formulas' ? `SUM(${qStart}:${qEnd})` : undefined, z: numFmtInt 
+      };
+
+      const dStart = XLSX.utils.encode_cell({ r: summaryStartRow, c: 6 });
+      const dEnd = XLSX.utils.encode_cell({ r: totalRow - 1, c: 6 });
+      wsSummary[XLSX.utils.encode_cell({ r: totalRow, c: 6 })] = { 
+        t: 'n', v: items.reduce((s, it) => s + Math.round(BOMEngine.costItem(it, currentRates, norms).direct), 0),
+        f: mode === 'formulas' ? `SUM(${dStart}:${dEnd})` : undefined, z: numFmtIDR 
+      };
+
+      const ovStart = XLSX.utils.encode_cell({ r: summaryStartRow, c: 7 });
+      const ovEnd = XLSX.utils.encode_cell({ r: totalRow - 1, c: 7 });
+      wsSummary[XLSX.utils.encode_cell({ r: totalRow, c: 7 })] = { 
+        t: 'n', v: items.reduce((s, it) => s + Math.round(BOMEngine.costItem(it, currentRates, norms).overhead), 0),
+        f: mode === 'formulas' ? `SUM(${ovStart}:${ovEnd})` : undefined, z: numFmtIDR 
+      };
+
+      const totStart = XLSX.utils.encode_cell({ r: summaryStartRow, c: 11 });
+      const totEnd = XLSX.utils.encode_cell({ r: totalRow - 1, c: 11 });
+      wsSummary[XLSX.utils.encode_cell({ r: totalRow, c: 11 })] = { 
+        t: 'n', v: items.reduce((s, it) => {
+          const res = BOMEngine.costItem(it, currentRates, norms);
+          const m = it.target_margin !== undefined ? it.target_margin : 30;
+          return s + Math.round(res.unit_cost * (1 + m / 100) * (it.header.project_qty || 1));
+        }, 0),
+        f: mode === 'formulas' ? `SUM(${totStart}:${totEnd})` : undefined, z: numFmtIDR 
+      };
+
+      wsSummary['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: totalRow + 1, c: 11 } });
+      wsSummary['!cols'] = [
+        { wch: 6 },  // No
+        { wch: 16 }, // Kode
+        { wch: 36 }, // Nama
+        { wch: 14 }, // Status
+        { wch: 12 }, // Qty
+        { wch: 15 }, // Vol Kayu
+        { wch: 22 }, // Direct
+        { wch: 18 }, // Overhead
+        { wch: 20 }, // HPP Unit
+        { wch: 15 }, // Margin
+        { wch: 24 }, // Harga Jual
+        { wch: 26 }  // Total Proyek
+      ];
+      wsSummary['!views'] = [{ showGridLines: true }];
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'RINGKASAN_PROYEK');
+
+      // =========================================================================
+      // 2. ONE TAB PER FURNITURE ITEM (LENGKAP 6 COST CENTERS)
+      // =========================================================================
+      items.forEach((it, itIdx) => {
+        const wsItem = {};
+        const res = BOMEngine.costItem(it, currentRates, norms);
+        const safeSheetName = (it.header.item_code || `ITEM_${itIdx+1}`).replace(/[\/?*\[\]:]/g, '_').slice(0, 31);
+        let curRow = 0;
+
+        // Function helper to write cell safely
+        function setCell(r, c, val, type = 's', fmt = undefined, formula = undefined) {
+          const ref = XLSX.utils.encode_cell({ r, c });
+          const cell = { t: type, v: val };
+          if (fmt) cell.z = fmt;
+          if (mode === 'formulas' && formula) cell.f = formula;
+          wsItem[ref] = cell;
+        }
+
+        // --- SECTION A: METADATA & FINANCIAL ROLL-UP BANNER ---
+        setCell(curRow, 0, 'PLV BILL OF MATERIALS & COST CALCULATION SHEET'); curRow++;
+        setCell(curRow, 0, `KODE ITEM: ${it.header.item_code || '-'}`);
+        setCell(curRow, 2, `DIMENSI P x L x T: ${it.header.overall_l || 0} x ${it.header.overall_w || 0} x ${it.header.overall_h || 0} mm`);
+        curRow++;
+
+        setCell(curRow, 0, `NAMA ITEM: ${it.header.item_name || '-'}`);
+        setCell(curRow, 2, `QTY SPK: ${it.header.project_qty || 1} Pcs | REVISI: Rev ${it.version || 1} (${it.status || 'DRAFT'})`);
+        curRow += 2;
+
+        // --- FINANCIAL SUMMARY MINI-TABLE (At Top for Fast Executive Review) ---
+        setCell(curRow, 0, 'RINGKASAN HPP EKSEKUTIF');
+        setCell(curRow, 1, 'PARAMETER / METRIK');
+        setCell(curRow, 2, 'NILAI RUPIAH (IDR)');
+        curRow++;
+
+        const finRollupRows = [
+          ['Biaya Langsung (Direct Cost)', Math.round(res.direct), numFmtIDR],
+          ['Biaya Rupa-rupa (Misc Direct 5%)', Math.round(res.misc), numFmtIDR],
+          ['Overhead Pabrik Terpadu (12.99287%)', Math.round(res.overhead), numFmtIDR],
+          ['TOTAL HPP PABRIK PER UNIT', Math.round(res.unit_cost), numFmtIDR],
+          ['Target Margin Penjualan', (it.target_margin || 30) / 100, numFmtPct],
+          ['HARGA JUAL SATUAN PROYEK', Math.round(res.unit_cost * (1 + (it.target_margin || 30) / 100)), numFmtIDR],
+          ['TOTAL NILAI SPK (QTY x HARGA JUAL)', Math.round(res.unit_cost * (1 + (it.target_margin || 30) / 100) * (it.header.project_qty || 1)), numFmtIDR]
         ];
 
+        finRollupRows.forEach((fr, fIdx) => {
+          setCell(curRow, 0, `Metrik ${fIdx+1}`);
+          setCell(curRow, 1, fr[0]);
+          setCell(curRow, 2, fr[1], 'n', fr[2]);
+          curRow++;
+        });
+        curRow += 2;
+
+        // --- SECTION 1: KAYU SOLID ---
+        setCell(curRow, 0, '1. KOMPONEN KAYU SOLID (TIMBER, SAWMILL & CARPENTRY)'); curRow++;
+        const solidHeaders = ['No', 'ID Part', 'Nama Komponen', 'Spesies Kayu', 'P (mm)', 'L (mm)', 'T (mm)', 'Qty', 'Vol Part (m³)', 'Exposed', 'Curved', 'Auto Tier', 'Subtotal Part (IDR)'];
+        solidHeaders.forEach((h, c) => setCell(curRow, c, h));
+        curRow++;
+
+        const solidStartRow = curRow;
         (it.solid || []).forEach((l, sIdx) => {
           const sRes = res.solid[sIdx] || {};
-          itemRows.push([
-            sIdx + 1,
-            l.material,
-            l.component,
-            l.l, l.w, l.t, l.qty,
-            l.exposed, l.curved,
-            sRes.auto_tier || 'B',
-            Math.round(sRes.cost || 0)
-          ]);
+          const costVal = Math.round(sRes.cost || 0);
+          const volVal = Number((((l.l || 0) * (l.w || 0) * (l.t || 0) / 1e9) * (l.qty || 1)).toFixed(6));
+
+          setCell(curRow, 0, sIdx + 1, 'n', numFmtInt);
+          setCell(curRow, 1, l.part_id || `P-${sIdx+1}`);
+          setCell(curRow, 2, l.component || '-');
+          setCell(curRow, 3, l.material || 'JATI');
+          setCell(curRow, 4, l.l || 0, 'n', numFmtInt);
+          setCell(curRow, 5, l.w || 0, 'n', numFmtInt);
+          setCell(curRow, 6, l.t || 0, 'n', numFmtInt);
+          setCell(curRow, 7, l.qty || 1, 'n', numFmtInt);
+
+          // Formula Volume m3 = (L * W * T / 1e9) * Qty
+          const pCell = XLSX.utils.encode_cell({ r: curRow, c: 4 });
+          const lCell = XLSX.utils.encode_cell({ r: curRow, c: 5 });
+          const tCell = XLSX.utils.encode_cell({ r: curRow, c: 6 });
+          const qCell = XLSX.utils.encode_cell({ r: curRow, c: 7 });
+          setCell(curRow, 8, volVal, 'n', numFmtDec, `(${pCell}*${lCell}*${tCell}/1000000000)*${qCell}`);
+
+          setCell(curRow, 9, l.exposed || 1, 'n', numFmtInt);
+          setCell(curRow, 10, l.curved ? 'YA' : 'TIDAK');
+          setCell(curRow, 11, sRes.auto_tier || 'B');
+          setCell(curRow, 12, costVal, 'n', numFmtIDR);
+          curRow++;
         });
 
-        itemRows.push([]);
-        itemRows.push(['--- PANELS & SHEET GOODS ---']);
-        itemRows.push(['No', 'Panel Type', 'Component', 'L (mm)', 'W (mm)', 'T (mm)', 'Qty', 'Faces', 'Sheets', 'Subtotal (IDR)']);
+        const solidEndRow = curRow - 1;
+        setCell(curRow, 2, 'SUBTOTAL KAYU SOLID');
+        const sSubStart = XLSX.utils.encode_cell({ r: solidStartRow, c: 12 });
+        const sSubEnd = XLSX.utils.encode_cell({ r: Math.max(solidStartRow, solidEndRow), c: 12 });
+        setCell(curRow, 12, Math.round(res.timber + res.carpentry_labour + res.fasteners), 'n', numFmtIDR, (it.solid && it.solid.length > 0) ? `SUM(${sSubStart}:${sSubEnd})` : undefined);
+        curRow += 2;
 
+        // --- SECTION 2: PANELS & SHEET GOODS ---
+        setCell(curRow, 0, '2. KOMPONEN PANEL & SHEET GOODS (PLYWOOD & VENEER)'); curRow++;
+        const panelHeaders = ['No', 'ID Part', 'Nama Komponen', 'Tipe Panel', 'P (mm)', 'L (mm)', 'T (mm)', 'Qty', 'Luas Part (m²)', 'Muka Fin', 'Lembar Dikenakan', 'Subtotal Panel (IDR)'];
+        panelHeaders.forEach((h, c) => setCell(curRow, c, h));
+        curRow++;
+
+        const panelStartRow = curRow;
         (it.panels || []).forEach((p, pIdx) => {
           const pRes = res.panels[pIdx] || {};
-          itemRows.push([
-            pIdx + 1,
-            p.panel_type,
-            p.component,
-            p.l, p.w, p.t, p.qty,
-            p.exposed_faces,
-            pRes.sheets_charged ? Number(pRes.sheets_charged).toFixed(2) : 0,
-            Math.round(pRes.cost || 0)
-          ]);
+          const costVal = Math.round(pRes.cost || 0);
+          const areaVal = Number((((p.l || 0) * (p.w || 0) / 1e6) * (p.qty || 1)).toFixed(4));
+          const sheetsVal = Number((pRes.sheets_charged || 0).toFixed(2));
+
+          setCell(curRow, 0, pIdx + 1, 'n', numFmtInt);
+          setCell(curRow, 1, p.part_id || `PNL-${pIdx+1}`);
+          setCell(curRow, 2, p.component || '-');
+          setCell(curRow, 3, p.panel_type || 'PLY-18-RAW');
+          setCell(curRow, 4, p.l || 0, 'n', numFmtInt);
+          setCell(curRow, 5, p.w || 0, 'n', numFmtInt);
+          setCell(curRow, 6, p.t || 18, 'n', numFmtInt);
+          setCell(curRow, 7, p.qty || 1, 'n', numFmtInt);
+
+          // Formula Luas m2 = (P * L / 1e6) * Qty
+          const pCell = XLSX.utils.encode_cell({ r: curRow, c: 4 });
+          const lCell = XLSX.utils.encode_cell({ r: curRow, c: 5 });
+          const qCell = XLSX.utils.encode_cell({ r: curRow, c: 7 });
+          setCell(curRow, 8, areaVal, 'n', numFmtDec, `(${pCell}*${lCell}/1000000)*${qCell}`);
+
+          setCell(curRow, 9, p.exposed_faces || 1, 'n', numFmtInt);
+          setCell(curRow, 10, sheetsVal, 'n', '0.00');
+          setCell(curRow, 11, costVal, 'n', numFmtIDR);
+          curRow++;
         });
 
-        itemRows.push([]);
-        itemRows.push(['--- FINANCIAL ROLL-UP ---']);
-        itemRows.push(['Direct Cost:', Math.round(res.direct)]);
-        itemRows.push(['Overhead (12.99%):', Math.round(res.overhead)]);
-        itemRows.push(['HPP Pabrik (Unit):', Math.round(res.unit_cost)]);
-        itemRows.push(['Harga Jual Target:', Math.round(res.unit_cost * (1 + (it.target_margin || 30) / 100))]);
+        const panelEndRow = curRow - 1;
+        setCell(curRow, 2, 'SUBTOTAL PANEL & TRIPLEK');
+        const pSubStart = XLSX.utils.encode_cell({ r: panelStartRow, c: 11 });
+        const pSubEnd = XLSX.utils.encode_cell({ r: Math.max(panelStartRow, panelEndRow), c: 11 });
+        setCell(curRow, 11, Math.round(res.panels_cost), 'n', numFmtIDR, (it.panels && it.panels.length > 0) ? `SUM(${pSubStart}:${pSubEnd})` : undefined);
+        curRow += 2;
 
-        const wsItem = XLSX.utils.aoa_to_sheet(itemRows);
+        // --- SECTION 3: HARDWARE & ACCESSORIES ---
+        setCell(curRow, 0, '3. HARDWARE & FITTING (TOLERAN HARGA KOSONG/TBD)'); curRow++;
+        const hdwHeaders = ['No', 'Kode SKU', 'Deskripsi Hardware', 'Vendor', 'Satuan', 'Qty', 'Harga Satuan (IDR)', 'Subtotal Hardware (IDR)'];
+        hdwHeaders.forEach((h, c) => setCell(curRow, c, h));
+        curRow++;
+
+        const hdwStartRow = curRow;
+        (it.hardware || []).forEach((h, hIdx) => {
+          const hRes = res.hardware[hIdx] || {};
+          const priceVal = (h.unit_price !== null && h.unit_price !== undefined) ? Number(h.unit_price) : 0;
+          const costVal = Math.round(hRes.cost || (priceVal * (h.qty || 1)));
+
+          setCell(curRow, 0, hIdx + 1, 'n', numFmtInt);
+          setCell(curRow, 1, h.item_code || '-');
+          setCell(curRow, 2, h.description || '-');
+          setCell(curRow, 3, h.vendor || 'Standard');
+          setCell(curRow, 4, h.uom || 'pcs');
+          setCell(curRow, 5, h.qty || 1, 'n', numFmtInt);
+          setCell(curRow, 6, priceVal, 'n', numFmtIDR);
+
+          // Formula Subtotal = Qty * UnitPrice
+          const qCell = XLSX.utils.encode_cell({ r: curRow, c: 5 });
+          const prCell = XLSX.utils.encode_cell({ r: curRow, c: 6 });
+          setCell(curRow, 7, costVal, 'n', numFmtIDR, `${qCell}*${prCell}`);
+          curRow++;
+        });
+
+        const hdwEndRow = curRow - 1;
+        setCell(curRow, 2, 'SUBTOTAL HARDWARE');
+        const hSubStart = XLSX.utils.encode_cell({ r: hdwStartRow, c: 7 });
+        const hSubEnd = XLSX.utils.encode_cell({ r: Math.max(hdwStartRow, hdwEndRow), c: 7 });
+        setCell(curRow, 7, Math.round(res.hardware_cost), 'n', numFmtIDR, (it.hardware && it.hardware.length > 0) ? `SUM(${hSubStart}:${hSubEnd})` : undefined);
+        curRow += 2;
+
+        // --- SECTION 4: JASA LUAR & CUSTOM SUBCON ---
+        setCell(curRow, 0, '4. JASA LUAR & SUBCON MACHINING (BUBUT / UKIR)'); curRow++;
+        const customHeaders = ['No', 'Deskripsi Pekerjaan', 'Bengkel Subkon', 'Satuan', 'Qty', 'Tarif Satuan (IDR)', 'Subtotal Jasa (IDR)'];
+        customHeaders.forEach((h, c) => setCell(curRow, c, h));
+        curRow++;
+
+        const custStartRow = curRow;
+        (it.custom || []).forEach((c, cIdx) => {
+          const costVal = Math.round((c.unit_price || 0) * (c.qty || 1));
+          setCell(curRow, 0, cIdx + 1, 'n', numFmtInt);
+          setCell(curRow, 1, c.description || '-');
+          setCell(curRow, 2, c.vendor || 'Subkon Lokal');
+          setCell(curRow, 3, c.uom || 'pcs');
+          setCell(curRow, 4, c.qty || 1, 'n', numFmtInt);
+          setCell(curRow, 5, c.unit_price || 0, 'n', numFmtIDR);
+
+          const qCell = XLSX.utils.encode_cell({ r: curRow, c: 4 });
+          const prCell = XLSX.utils.encode_cell({ r: curRow, c: 5 });
+          setCell(curRow, 6, costVal, 'n', numFmtIDR, `${qCell}*${prCell}`);
+          curRow++;
+        });
+
+        const custEndRow = curRow - 1;
+        setCell(curRow, 1, 'SUBTOTAL JASA LUAR');
+        const cSubStart = XLSX.utils.encode_cell({ r: custStartRow, c: 6 });
+        const cSubEnd = XLSX.utils.encode_cell({ r: Math.max(custStartRow, custEndRow), c: 6 });
+        setCell(curRow, 6, Math.round(res.custom_cost), 'n', numFmtIDR, (it.custom && it.custom.length > 0) ? `SUM(${cSubStart}:${cSubEnd})` : undefined);
+        curRow += 2;
+
+        // --- SECTION 5: FINISHING & COATING (6-MUKA TERPADU) ---
+        setCell(curRow, 0, '5. FINISHING & COATING (KEPUTUSAN OWNER: 6-MUKA SOLID WOOD)'); curRow++;
+        const finHeaders = ['Komponen Biaya Finishing', 'Luas Total (m²)', 'Tarif Satuan (IDR/m²)', 'Porsi Biaya (%)', 'Subtotal Finishing (IDR)'];
+        finHeaders.forEach((h, c) => setCell(curRow, c, h));
+        curRow++;
+
+        const finDetails = [
+          ['Chemical Cat (FIN_MAT)', res.finishing_m2, Math.round(res.fin_mat / (res.finishing_m2 || 1)), '21.6%', Math.round(res.fin_mat)],
+          ['Bahan Amplas (SAND_MAT)', res.finishing_m2, Math.round(res.sand_mat / (res.finishing_m2 || 1)), '7.1%', Math.round(res.sand_mat)],
+          ['Upah Amplas/Gosok (SAND_LAB)', res.finishing_m2, Math.round(res.sand_lab / (res.finishing_m2 || 1)), '21.9%', Math.round(res.sand_lab)],
+          ['Upah Semprot/Topcoat (FIN_LAB)', res.finishing_m2, Math.round(res.fin_lab / (res.finishing_m2 || 1)), '49.3%', Math.round(res.fin_lab)]
+        ];
+
+        const finStartRow = curRow;
+        finDetails.forEach((fd) => {
+          setCell(curRow, 0, fd[0]);
+          setCell(curRow, 1, Number((fd[1] || 0).toFixed(4)), 'n', numFmtDec);
+          setCell(curRow, 2, fd[2], 'n', numFmtIDR);
+          setCell(curRow, 3, fd[3]);
+          setCell(curRow, 4, fd[4], 'n', numFmtIDR);
+          curRow++;
+        });
+
+        const finEndRow = curRow - 1;
+        setCell(curRow, 0, 'TOTAL FINISHING TERPADU');
+        const fSubStart = XLSX.utils.encode_cell({ r: finStartRow, c: 4 });
+        const fSubEnd = XLSX.utils.encode_cell({ r: finEndRow, c: 4 });
+        setCell(curRow, 4, Math.round(res.finishing), 'n', numFmtIDR, `SUM(${fSubStart}:${fSubEnd})`);
+        curRow += 2;
+
+        // --- SECTION 6: PACKAGING & KARTON BOX ---
+        setCell(curRow, 0, '6. PACKAGING & KARTON BOX (Q-3 STANDARD)'); curRow++;
+        const packHeaders = ['Tipe Kemasan', 'Dimensi Box PxLxT (mm)', 'Volume Box (m³)', 'Luas Board (m²)', 'Karton Board (IDR)', 'Upah Packing (IDR)', 'Subtotal Packaging (IDR)'];
+        packHeaders.forEach((h, c) => setCell(curRow, c, h));
+        curRow++;
+
+        const packStartRow = curRow;
+        (it.boxes || []).forEach((bx, bIdx) => {
+          const lDim = bx.length_cm ? bx.length_cm * 10 : (bx.l || 0);
+          const wDim = bx.width_cm ? bx.width_cm * 10 : (bx.w || 0);
+          const hDim = bx.height_cm ? bx.height_cm * 10 : (bx.h || 0);
+          const bVol = Number((lDim * wDim * hDim / 1e9).toFixed(4));
+          const bArea = Number(((2 * (lDim * wDim + lDim * hDim + wDim * hDim)) / 1e6).toFixed(4));
+          const kartonCost = Math.round(bArea * (currentRates.CARTON_BOARD || 42000));
+          const labCost = Math.round(bVol * (currentRates.PACKING_LAB || 100000));
+
+          setCell(curRow, 0, bx.name || `Box #${bIdx+1}`);
+          setCell(curRow, 1, `${lDim} x ${wDim} x ${hDim} mm`);
+          setCell(curRow, 2, bVol, 'n', numFmtDec);
+          setCell(curRow, 3, bArea, 'n', numFmtDec);
+          setCell(curRow, 4, kartonCost, 'n', numFmtIDR);
+          setCell(curRow, 5, labCost, 'n', numFmtIDR);
+
+          const kCell = XLSX.utils.encode_cell({ r: curRow, c: 4 });
+          const lbCell = XLSX.utils.encode_cell({ r: curRow, c: 5 });
+          setCell(curRow, 6, kartonCost + labCost, 'n', numFmtIDR, `${kCell}+${lbCell}`);
+          curRow++;
+        });
+
+        const packEndRow = curRow - 1;
+        setCell(curRow, 1, 'SUBTOTAL PACKAGING');
+        const pkSubStart = XLSX.utils.encode_cell({ r: packStartRow, c: 6 });
+        const pkSubEnd = XLSX.utils.encode_cell({ r: Math.max(packStartRow, packEndRow), c: 6 });
+        setCell(curRow, 6, Math.round(res.packing), 'n', numFmtIDR, (it.boxes && it.boxes.length > 0) ? `SUM(${pkSubStart}:${pkSubEnd})` : undefined);
+
+        // Sheet Setup
+        wsItem['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: curRow + 2, c: 12 } });
+        wsItem['!cols'] = [
+          { wch: 6 },  // No
+          { wch: 15 }, // ID Part
+          { wch: 32 }, // Nama Komponen
+          { wch: 16 }, // Material / Tipe
+          { wch: 11 }, // P
+          { wch: 11 }, // L
+          { wch: 11 }, // T
+          { wch: 9 },  // Qty
+          { wch: 15 }, // Vol / Luas
+          { wch: 12 }, // Exposed
+          { wch: 16 }, // Lengkung / Sheets
+          { wch: 14 }, // Auto Tier
+          { wch: 22 }  // Subtotal IDR
+        ];
+        wsItem['!views'] = [{ showGridLines: true }];
         XLSX.utils.book_append_sheet(wb, wsItem, safeSheetName);
       });
 
-      XLSX.writeFile(wb, `PLV_BOM_Costing_${mode.toUpperCase()}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      // Write File
+      const filename = `PLV_BOM_Costing_${mode.toUpperCase()}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      XLSX.writeFile(wb, filename);
     }
 
     function downloadTemplate(type) {
