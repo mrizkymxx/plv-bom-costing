@@ -1,0 +1,3009 @@
+<!DOCTYPE html>
+<html class="dark" lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>PLV BOM Costing & Rate Card Cockpit</title>
+  
+  <!-- Material Symbols & Clean Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  
+  <!-- SheetJS for real XLSX Export / Import -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
+  <!-- Zero-dependency Core Engine -->
+  <script src="engine.js"></script>
+  
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface": "#0c0c0e",
+            "surface-card": "#141417",
+            "surface-elevated": "#1a1a1f",
+            "surface-subtle": "#222228",
+            "border-subtle": "#27272a",
+            "border-strong": "#3f3f46",
+            "primary": "#ffffff",
+            "text-subtle": "#a1a1aa",
+            "text-muted": "#71717a",
+            "accent-green": "#10b981",
+            "accent-green-bg": "rgba(16, 185, 129, 0.12)",
+            "accent-amber": "#f59e0b",
+            "accent-amber-bg": "rgba(245, 158, 11, 0.12)",
+            "accent-blue": "#38bdf8",
+            "accent-blue-bg": "rgba(56, 189, 248, 0.12)",
+            "accent-rose": "#f43f5e",
+            "accent-rose-bg": "rgba(244, 63, 94, 0.12)"
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Geist', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #141417;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 3px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+
+  <!-- HARDWARE CATALOG DATALIST FOR AUTOCOMPLETE -->
+  <datalist id="hardwareCatalogList">
+    <option value="I-00001">NANASAN + BAUT JCBC SST (Rp 3.500)</option>
+    <option value="I-00002">PLAT SIKU SST (Rp 6.000)</option>
+    <option value="I-00003">Nylon glides 25 mm (Rp 1.500)</option>
+    <option value="I-00004">Hinge, concealed, soft close 35 mm (Rp 28.000)</option>
+    <option value="I-00005">Hinge, butt brass 50 mm (Rp 17.500)</option>
+    <option value="I-00006">Drawer slide, ball bearing 450 mm (Rp 85.000)</option>
+    <option value="I-00007">Mirror 5 mm, cut to size (Rp 265.000)</option>
+    <option value="I-00008">Handle, solid brass 128 mm (Rp 95.000)</option>
+    <option value="I-00009">Magnetic catch (Rp 6.500)</option>
+    <option value="I-00010">Shelf support pin 5 mm SST (Rp 1.200)</option>
+    <option value="I-00011">Engsel Pivot Custom (TBD / Kosong)</option>
+    <option value="I-00012">Kunci Laci Central (TBD / Kosong)</option>
+  </datalist>
+  <body class="bg-surface text-neutral-200 font-sans antialiased min-h-screen flex flex-col selection:bg-neutral-800 selection:text-white">
+
+  <!-- TOP HEADER -->
+  <header class="border-b border-border-subtle bg-surface-card/90 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-[1800px] mx-auto px-4 lg:px-6 h-14 flex items-center justify-between gap-4">
+      
+      <!-- Brand & Project Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-surface-elevated border border-border-strong flex items-center justify-center font-mono font-bold text-white text-xs">
+          PLV
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <h1 class="font-display font-semibold text-sm tracking-tight text-white">BOM Costing & Rate Cockpit</h1>
+            <span class="text-[10px] font-mono uppercase bg-accent-green-bg text-accent-green border border-accent-green/30 px-1.5 py-0.2 rounded font-semibold tracking-wider">Engine v2.0</span>
+          </div>
+          <span class="text-[11px] text-text-muted">Standard Furniture Costing • Precision down to the Rupiah</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex items-center bg-surface-elevated p-1 rounded-lg border border-border-subtle">
+        <button id="navBtnBom" onclick="switchMainTab('bom')" class="px-3.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 bg-neutral-800 text-white shadow-sm">
+          <span class="material-symbols-outlined text-[15px]">inventory_2</span>
+          <span>Kalkulasi Item BOM</span>
+          <span id="bomCountBadge" class="ml-1 text-[10px] font-mono bg-neutral-700 px-1.5 py-0.2 rounded">4</span>
+        </button>
+        <button id="navBtnRates" onclick="switchMainTab('rates')" class="px-3.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 text-text-subtle hover:text-white">
+          <span class="material-symbols-outlined text-[15px]">tune</span>
+          <span>Master Tarif & Rate Card</span>
+        </button>
+      </div>
+
+      <!-- Action Buttons & Persistence -->
+      <div class="flex items-center gap-2">
+        
+        <!-- Auto-save debounced indicator -->
+        <div id="saveIndicator" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-elevated border border-border-subtle text-[11px] text-text-muted font-mono">
+          <span id="saveDot" class="w-2 h-2 rounded-full bg-accent-green"></span>
+          <span id="saveStatusText">Tersimpan Lokal</span>
+        </div>
+
+        <!-- Download Templates Menu -->
+        <div class="relative group">
+          <button class="h-8 px-2.5 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-neutral-200 text-xs font-medium transition-colors flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-text-subtle">download</span>
+            <span>Download Template</span>
+            <span class="material-symbols-outlined text-[14px] text-text-muted">arrow_drop_down</span>
+          </button>
+          <div class="absolute right-0 mt-1 w-52 bg-surface-card border border-border-strong rounded-lg shadow-xl py-1 hidden group-hover:block z-50">
+            <button onclick="downloadTemplate('bom')" class="w-full text-left px-3 py-2 text-xs hover:bg-surface-elevated text-neutral-200 flex items-center gap-2">
+              <span class="material-symbols-outlined text-[15px] text-accent-blue">table_view</span>
+              <div>
+                <div class="font-medium">Template Flat BOM</div>
+                <div class="text-[10px] text-text-muted">Daftar potong kayu & part</div>
+              </div>
+            </button>
+            <button onclick="downloadTemplate('rates')" class="w-full text-left px-3 py-2 text-xs hover:bg-surface-elevated text-neutral-200 flex items-center gap-2 border-t border-border-subtle">
+              <span class="material-symbols-outlined text-[15px] text-accent-amber">price_change</span>
+              <div>
+                <div class="font-medium">Template Rate Card</div>
+                <div class="text-[10px] text-text-muted">27 tarif dasar pabrik</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hidden Excel File Input -->
+        <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)" />
+        
+        <!-- Upload Excel Button -->
+        <button onclick="document.getElementById('excelFileInput').click()" class="h-8 px-2.5 rounded bg-surface-elevated hover:bg-surface-subtle border border-dashed border-border-strong text-neutral-200 text-xs font-medium transition-colors flex items-center gap-1.5" title="Unggah Excel Flat BOM atau Rate Card">
+          <span class="material-symbols-outlined text-[16px] text-accent-amber">upload_file</span>
+          <span>Upload Excel</span>
+        </button>
+
+        <!-- Dual Export Dropdown -->
+        <div class="relative group">
+          <button class="h-8 px-3 rounded bg-white hover:bg-neutral-200 text-black text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm active:scale-95">
+            <span class="material-symbols-outlined text-[16px]">file_download</span>
+            <span>Export Excel</span>
+            <span class="material-symbols-outlined text-[14px]">arrow_drop_down</span>
+          </button>
+          <div class="absolute right-0 mt-1 w-56 bg-surface-card border border-border-strong rounded-lg shadow-xl py-1 hidden group-hover:block z-50">
+            <button onclick="exportExcel('formulas')" class="w-full text-left px-3 py-2 text-xs hover:bg-surface-elevated text-neutral-200 flex items-center gap-2">
+              <span class="material-symbols-outlined text-[15px] text-accent-green">functions</span>
+              <div>
+                <div class="font-medium">Export Live Formulas</div>
+                <div class="text-[10px] text-text-muted">Rumus Excel aktif (=SUM, dsb)</div>
+              </div>
+            </button>
+            <button onclick="exportExcel('static')" class="w-full text-left px-3 py-2 text-xs hover:bg-surface-elevated text-neutral-200 flex items-center gap-2 border-t border-border-subtle">
+              <span class="material-symbols-outlined text-[15px] text-text-subtle">tag</span>
+              <div>
+                <div class="font-medium">Export Static Values</div>
+                <div class="text-[10px] text-text-muted">Nilai baku bersih tanpa rumus</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- SUB COMMAND STRIP -->
+  <section class="bg-surface-card border-b border-border-subtle/70 px-4 lg:px-6 py-2">
+    <div class="max-w-[1800px] mx-auto flex flex-wrap items-center justify-between gap-y-2 text-xs">
+      <div class="flex items-center flex-wrap gap-4 text-text-subtle">
+        <div class="flex items-center gap-1.5">
+          <span class="text-text-muted uppercase tracking-wider text-[10px] font-semibold">Format Mata Uang:</span>
+          <span class="font-mono text-white bg-surface-subtle px-1.5 py-0.5 rounded border border-border-subtle">Strict IDR Integer (#,##0)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-text-muted uppercase tracking-wider text-[10px] font-semibold">Formula Kayu Solid:</span>
+          <span class="font-mono text-text-subtle bg-surface-subtle px-1.5 py-0.5 rounded border border-border-subtle">Rate = (Log + Proc) × Yield + Upah</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-text-muted uppercase tracking-wider text-[10px] font-semibold">Finishing:</span>
+          <span class="font-mono text-accent-green bg-surface-subtle px-1.5 py-0.5 rounded border border-border-subtle">Flat 6-Muka (Q-2)</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="openSupabaseModal()" class="px-2.5 py-1 rounded bg-surface-subtle hover:bg-surface-elevated border border-border-subtle text-neutral-300 text-[11px] font-mono flex items-center gap-1.5 transition-colors">
+          <span class="material-symbols-outlined text-[14px] text-accent-blue">database</span>
+          <span id="supabaseBtnLabel">Cloud Sync (Supabase)</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN VIEW CONTAINER -->
+  <main class="flex-1 max-w-[1800px] w-full mx-auto p-4 lg:p-6 flex flex-col gap-6">
+
+    <!-- ================================================================= -->
+    <!-- VIEW 1: KALKULASI ITEM BOM (MAIN DEFAULT WORKSPACE) -->
+    <!-- ================================================================= -->
+    <div id="viewBom" class="flex flex-col lg:flex-row gap-6">
+      
+      <!-- LEFT SIDEBAR: ITEM SELECTOR / NAVIGATOR -->
+      <aside class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <h2 class="font-display font-semibold text-sm text-white tracking-tight uppercase">Daftar Item BOM</h2>
+            <span id="navItemCount" class="text-xs font-mono text-text-muted">(4 Items)</span>
+          </div>
+          <button onclick="addNewBlankItem()" class="px-2 py-1 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-strong text-white text-xs font-medium flex items-center gap-1 transition-colors">
+            <span class="material-symbols-outlined text-[15px] text-accent-green">add</span>
+            <span>Item Baru</span>
+          </button>
+        </div>
+
+        <!-- Filter & Search -->
+        <div class="relative">
+          <input type="text" id="itemSearchInput" oninput="filterItemList()" placeholder="Cari kode atau nama item..." class="w-full h-8 pl-8 pr-3 bg-surface-elevated border border-border-subtle rounded text-xs text-white placeholder:text-text-muted focus:outline-none focus:border-border-strong font-sans" />
+          <span class="material-symbols-outlined text-[16px] text-text-muted absolute left-2.5 top-2">search</span>
+        </div>
+
+        <!-- Item Cards Container -->
+        <div id="itemListContainer" class="flex flex-col gap-2 max-h-[750px] overflow-y-auto custom-scroll pr-1">
+          <!-- Rendered via JS -->
+        </div>
+      </aside>
+
+      <!-- RIGHT MAIN AREA: SELECTED ITEM WORKSPACE -->
+      <section class="flex-1 flex flex-col gap-5 min-w-0" id="itemWorkspaceArea">
+        
+        <!-- HEADER ITEM CARD -->
+        <div class="bg-surface-card border border-border-subtle rounded-xl p-4 lg:p-5 flex flex-col gap-4 shadow-sm">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div class="flex flex-col gap-1 min-w-0">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <input type="text" id="headerItemCode" onchange="updateActiveHeader('item_code', this.value)" class="bg-transparent font-display font-bold text-xl text-white tracking-tight border-b border-transparent hover:border-border-strong focus:border-white focus:bg-surface-elevated px-1 py-0.5 rounded outline-none transition-all w-48" placeholder="ITEM CODE" />
+                <span id="badgeLockStatus" class="text-xs font-mono px-2 py-0.5 rounded font-medium border flex items-center gap-1"></span>
+                <span id="badgeRevision" class="text-xs font-mono px-2 py-0.5 rounded bg-surface-subtle text-text-subtle border border-border-subtle">Rev 1</span>
+              </div>
+              <input type="text" id="headerItemName" onchange="updateActiveHeader('item_name', this.value)" class="bg-transparent text-sm text-text-subtle border-b border-transparent hover:border-border-strong focus:border-white focus:bg-surface-elevated px-1 py-0.5 rounded outline-none transition-all w-full max-w-lg" placeholder="Deskripsi nama furniture..." />
+            </div>
+
+            <!-- Workspace Action Buttons -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <button id="btnLockBom" onclick="promptLockActiveItem()" class="h-8 px-3 rounded bg-accent-blue-bg hover:bg-accent-blue/20 border border-accent-blue/30 text-accent-blue text-xs font-medium flex items-center gap-1.5 transition-colors">
+                <span class="material-symbols-outlined text-[15px]">lock</span>
+                <span>Lock BOM</span>
+              </button>
+              <button id="btnNewRevision" onclick="createRevisionActiveItem()" class="h-8 px-3 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-strong text-neutral-200 text-xs font-medium flex items-center gap-1.5 transition-colors">
+                <span class="material-symbols-outlined text-[15px]">difference</span>
+                <span>Buat Rev Baru</span>
+              </button>
+              <button id="btnDiffCompare" onclick="openRevisionDiffModal()" class="h-8 px-3 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-neutral-300 text-xs font-medium flex items-center gap-1.5 transition-colors">
+                <span class="material-symbols-outlined text-[15px]">history</span>
+                <span>Bandingkan Revisi</span>
+              </button>
+              <button onclick="duplicateActiveItem()" class="h-8 px-2.5 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-neutral-300 text-xs font-medium flex items-center gap-1 transition-colors" title="Duplikasi item ini">
+                <span class="material-symbols-outlined text-[15px]">content_copy</span>
+              </button>
+              <button onclick="deleteActiveItem()" class="h-8 px-2.5 rounded bg-accent-rose-bg hover:bg-accent-rose/20 border border-accent-rose/30 text-accent-rose text-xs font-medium flex items-center gap-1 transition-colors" title="Hapus item ini">
+                <span class="material-symbols-outlined text-[15px]">delete</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Parameter Header Baris 2 -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-3 border-t border-border-subtle text-xs">
+            <div>
+              <span class="text-text-muted text-[11px] block">Project Qty</span>
+              <input type="number" id="headerQty" onchange="updateActiveHeader('project_qty', Number(this.value))" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2 py-1 text-white font-mono text-xs focus:border-border-strong" min="1" />
+            </div>
+            <div>
+              <span class="text-text-muted text-[11px] block">Dimensi P (mm)</span>
+              <input type="number" id="headerDimL" onchange="updateActiveHeader('overall_l', Number(this.value))" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2 py-1 text-white font-mono text-xs focus:border-border-strong" />
+            </div>
+            <div>
+              <span class="text-text-muted text-[11px] block">Dimensi L (mm)</span>
+              <input type="number" id="headerDimW" onchange="updateActiveHeader('overall_w', Number(this.value))" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2 py-1 text-white font-mono text-xs focus:border-border-strong" />
+            </div>
+            <div>
+              <span class="text-text-muted text-[11px] block">Dimensi T (mm)</span>
+              <input type="number" id="headerDimH" onchange="updateActiveHeader('overall_h', Number(this.value))" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2 py-1 text-white font-mono text-xs focus:border-border-strong" />
+            </div>
+            <div>
+              <span class="text-text-muted text-[11px] block">Resep Finish</span>
+              <select id="headerFinishRecipe" onchange="updateActiveHeader('finish_recipe', this.value)" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2 py-1 text-white text-xs focus:border-border-strong">
+                <option value="NC NATURAL">NC Natural</option>
+                <option value="PU DUCO">PU Duco</option>
+                <option value="NC + GLAZE">NC + Glaze</option>
+                <option value="RAW">Raw / Non-Finishing</option>
+                <option value="OTHER">Other / Custom</option>
+              </select>
+            </div>
+            <div>
+              <span class="text-text-muted text-[11px] block">Target Margin (%)</span>
+              <input type="number" id="headerTargetMargin" onchange="updateActiveMargin(Number(this.value))" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2 py-1 text-accent-green font-mono font-semibold text-xs focus:border-border-strong" step="1" min="0" max="200" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ALERT BANNERS (WARNING & PARTIAL) -->
+        <div id="bannerMissingPrices" class="hidden bg-accent-amber-bg border border-accent-amber/30 rounded-lg p-3 text-xs text-neutral-200 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-accent-amber text-[18px]">warning</span>
+            <span id="bannerMissingText">Ada beberapa hardware / custom part yang belum memiliki harga satuan.</span>
+          </div>
+          <button onclick="dismissMissingPriceBanner()" class="px-2.5 py-1 rounded bg-accent-amber/20 hover:bg-accent-amber/30 text-accent-amber font-medium text-[11px] transition-colors">
+            Tetap Hitung Parsial
+          </button>
+        </div>
+
+        <div id="bannerUnusualDimensions" class="hidden bg-accent-rose-bg border border-accent-rose/30 rounded-lg p-3 text-xs text-neutral-200 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-accent-rose text-[18px]">report_problem</span>
+            <span id="bannerUnusualText">Ditemukan ukuran tidak wajar / melebihi lembar standar triplek.</span>
+          </div>
+          <button onclick="dismissUnusualBanner()" class="px-2.5 py-1 rounded bg-surface-subtle text-neutral-300 font-medium text-[11px]">
+            Tutup
+          </button>
+        </div>
+
+        <!-- MAIN CUTLIST TABLES & FINANCIAL SUMMARY SPLIT -->
+        <div class="flex flex-col xl:flex-row gap-6 items-start">
+          
+          <!-- CUTLIST & COMPONENTS ACCORDIONS -->
+          <div class="flex-1 w-full flex flex-col gap-5 min-w-0">
+            
+            <!-- SECTION 1: KAYU SOLID -->
+            <div class="bg-surface-card border border-border-subtle rounded-xl overflow-hidden shadow-sm">
+              <div class="px-4 py-3 bg-surface-elevated/70 border-b border-border-subtle flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[17px] text-accent-green">forest</span>
+                  <h3 class="font-display font-semibold text-xs text-white uppercase tracking-wider">1. Kayu Solid (Cutlist)</h3>
+                  <span id="countSolidRows" class="text-[11px] font-mono text-text-muted">(0 part)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="openAddCustomColModal('solid')" class="px-2 py-0.5 rounded bg-surface-subtle hover:bg-surface-card border border-border-subtle text-[11px] text-text-subtle hover:text-white flex items-center gap-1 transition-colors">
+                    <span class="material-symbols-outlined text-[13px]">playlist_add</span>
+                    <span>+ Kolom Kustom</span>
+                  </button>
+                  <button onclick="addNewRow('solid')" class="px-2.5 py-0.5 rounded bg-accent-green-bg hover:bg-accent-green/20 border border-accent-green/30 text-accent-green text-[11px] font-medium flex items-center gap-1 transition-colors">
+                    <span class="material-symbols-outlined text-[13px]">add</span>
+                    <span>+ Baris Kayu</span>
+                  </button>
+                </div>
+              </div>
+              <div class="overflow-x-auto custom-scroll">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="bg-surface-subtle/50 text-[11px] text-text-muted font-mono uppercase tracking-wider border-b border-border-subtle">
+                      <th class="py-2 px-2.5 w-12 text-center">No</th>
+                      <th class="py-2 px-2.5 w-24">Material</th>
+                      <th class="py-2 px-2.5 min-w-[120px]">Nama Komponen</th>
+                      <th class="py-2 px-2 w-16 text-right">P (mm)</th>
+                      <th class="py-2 px-2 w-16 text-right">L (mm)</th>
+                      <th class="py-2 px-2 w-16 text-right">T (mm)</th>
+                      <th class="py-2 px-2 w-12 text-right">Qty</th>
+                      <th class="py-2 px-2 w-12 text-center" title="Exposed Y/N">Exp</th>
+                      <th class="py-2 px-2 w-12 text-center" title="Curved Y/N">Crv</th>
+                      <th class="py-2 px-2.5 w-20 text-center">Auto Tier</th>
+                      <th class="py-2 px-2 w-16 text-center" title="Subkon Bubut/Ukir (Tanpa upah internal)">Subkon</th>
+                      <!-- Dynamic Custom Columns Header -->
+                      <th class="py-2 px-2.5 text-right w-24">Subtotal IDR</th>
+                      <th class="py-2 px-1 w-8 text-center"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbodySolid" class="divide-y divide-border-subtle font-mono text-neutral-300">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- SECTION 2: PANELS & PLYWOOD -->
+            <div class="bg-surface-card border border-border-subtle rounded-xl overflow-hidden shadow-sm">
+              <div class="px-4 py-3 bg-surface-elevated/70 border-b border-border-subtle flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[17px] text-accent-blue">layers</span>
+                  <h3 class="font-display font-semibold text-xs text-white uppercase tracking-wider">2. Panels & Sheet Goods</h3>
+                  <span id="countPanelRows" class="text-[11px] font-mono text-text-muted">(0 part)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="openAddCustomColModal('panels')" class="px-2 py-0.5 rounded bg-surface-subtle hover:bg-surface-card border border-border-subtle text-[11px] text-text-subtle hover:text-white flex items-center gap-1 transition-colors">
+                    <span class="material-symbols-outlined text-[13px]">playlist_add</span>
+                    <span>+ Kolom Kustom</span>
+                  </button>
+                  <button onclick="addNewRow('panels')" class="px-2.5 py-0.5 rounded bg-accent-blue-bg hover:bg-accent-blue/20 border border-accent-blue/30 text-accent-blue text-[11px] font-medium flex items-center gap-1 transition-colors">
+                    <span class="material-symbols-outlined text-[13px]">add</span>
+                    <span>+ Baris Panel</span>
+                  </button>
+                </div>
+              </div>
+              <div class="overflow-x-auto custom-scroll">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="bg-surface-subtle/50 text-[11px] text-text-muted font-mono uppercase tracking-wider border-b border-border-subtle">
+                      <th class="py-2 px-2.5 w-12 text-center">No</th>
+                      <th class="py-2 px-2.5 w-32">Tipe Panel</th>
+                      <th class="py-2 px-2.5 min-w-[120px]">Nama Komponen</th>
+                      <th class="py-2 px-2 w-16 text-right">P (mm)</th>
+                      <th class="py-2 px-2 w-16 text-right">L (mm)</th>
+                      <th class="py-2 px-2 w-16 text-right">T (mm)</th>
+                      <th class="py-2 px-2 w-12 text-right">Qty</th>
+                      <th class="py-2 px-2 w-14 text-center">Muka Exp</th>
+                      <th class="py-2 px-2 w-16 text-right">Pcs/Sht</th>
+                      <th class="py-2 px-2 w-16 text-right">Lembar</th>
+                      <th class="py-2 px-2.5 text-right w-24">Subtotal IDR</th>
+                      <th class="py-2 px-1 w-8 text-center"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbodyPanels" class="divide-y divide-border-subtle font-mono text-neutral-300">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- SECTION 3: HARDWARE & ACCESSORIES -->
+            <div class="bg-surface-card border border-border-subtle rounded-xl overflow-hidden shadow-sm">
+              <div class="px-4 py-3 bg-surface-elevated/70 border-b border-border-subtle flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[17px] text-accent-amber">hardware</span>
+                  <h3 class="font-display font-semibold text-xs text-white uppercase tracking-wider">3. Hardware & Accessories</h3>
+                  <span id="countHardwareRows" class="text-[11px] font-mono text-text-muted">(0 part)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="openAddCustomColModal('hardware')" class="px-2 py-0.5 rounded bg-surface-subtle hover:bg-surface-card border border-border-subtle text-[11px] text-text-subtle hover:text-white flex items-center gap-1 transition-colors">
+                    <span class="material-symbols-outlined text-[13px]">playlist_add</span>
+                    <span>+ Kolom Kustom</span>
+                  </button>
+                  <button onclick="addNewRow('hardware')" class="px-2.5 py-0.5 rounded bg-accent-amber-bg hover:bg-accent-amber/20 border border-accent-amber/30 text-accent-amber text-[11px] font-medium flex items-center gap-1 transition-colors">
+                    <span class="material-symbols-outlined text-[13px]">add</span>
+                    <span>+ Baris Hardware</span>
+                  </button>
+                </div>
+              </div>
+              <div class="overflow-x-auto custom-scroll">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="bg-surface-subtle/50 text-[11px] text-text-muted font-mono uppercase tracking-wider border-b border-border-subtle">
+                      <th class="py-2 px-2.5 w-12 text-center">No</th>
+                      <th class="py-2 px-2.5 w-24">Item Code</th>
+                      <th class="py-2 px-2.5 min-w-[160px]">Deskripsi Hardware</th>
+                      <th class="py-2 px-2 w-16 text-right">Qty</th>
+                      <th class="py-2 px-2.5 w-32 text-right">Harga Satuan (IDR)</th>
+                      <th class="py-2 px-2.5 text-right w-28">Subtotal IDR</th>
+                      <th class="py-2 px-1 w-8 text-center"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbodyHardware" class="divide-y divide-border-subtle font-mono text-neutral-300">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- SECTION 4: CUSTOM PARTS & JASA LUAR (TOLERAN & FLEKSIBEL) -->
+            <div class="bg-surface-card border border-border-subtle rounded-xl overflow-hidden shadow-sm">
+              <div class="px-4 py-3 bg-surface-elevated/70 border-b border-border-subtle flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[17px] text-purple-400">extension</span>
+                  <h3 class="font-display font-semibold text-xs text-white uppercase tracking-wider">4. Custom Parts & Jasa Luar (Beli Jadi / Jok / Marmer)</h3>
+                  <span id="countCustomRows" class="text-[11px] font-mono text-text-muted">(0 item)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="addNewRow('custom')" class="px-2.5 py-0.5 rounded bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-400 text-[11px] font-medium flex items-center gap-1 transition-colors">
+                    <span class="material-symbols-outlined text-[13px]">add</span>
+                    <span>+ Tambah Part Bebas</span>
+                  </button>
+                </div>
+              </div>
+              <div class="overflow-x-auto custom-scroll">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="bg-surface-subtle/50 text-[11px] text-text-muted font-mono uppercase tracking-wider border-b border-border-subtle">
+                      <th class="py-2 px-2.5 w-12 text-center">No</th>
+                      <th class="py-2 px-2.5 w-28">Kategori</th>
+                      <th class="py-2 px-2.5 min-w-[160px]">Deskripsi Barang / Jasa</th>
+                      <th class="py-2 px-2 w-16 text-right">Qty</th>
+                      <th class="py-2 px-2.5 w-32 text-right">Harga Satuan (IDR)</th>
+                      <th class="py-2 px-2.5 text-right w-28">Subtotal IDR</th>
+                      <th class="py-2 px-1 w-8 text-center"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbodyCustom" class="divide-y divide-border-subtle font-mono text-neutral-300">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- SECTION 5: PACKAGING BOXES (KD FLATPACK) -->
+            <div class="bg-surface-card border border-border-subtle rounded-xl overflow-hidden shadow-sm">
+              <div class="px-4 py-3 bg-surface-elevated/70 border-b border-border-subtle flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[17px] text-yellow-500">package_2</span>
+                  <h3 class="font-display font-semibold text-xs text-white uppercase tracking-wider">5. Packaging (Karton Box)</h3>
+                  <span class="text-[11px] text-text-muted">• Jika kosong otomatis pakai dimensi luar + 40mm</span>
+                </div>
+                <button onclick="addNewRow('boxes')" class="px-2.5 py-0.5 rounded bg-surface-subtle hover:bg-surface-elevated border border-border-subtle text-[11px] text-neutral-300 flex items-center gap-1 transition-colors">
+                  <span class="material-symbols-outlined text-[13px]">add</span>
+                  <span>+ Box KD</span>
+                </button>
+              </div>
+              <div class="overflow-x-auto custom-scroll">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="bg-surface-subtle/50 text-[11px] text-text-muted font-mono uppercase tracking-wider border-b border-border-subtle">
+                      <th class="py-2 px-2.5 w-12 text-center">Box</th>
+                      <th class="py-2 px-2.5 min-w-[140px]">Isi Box</th>
+                      <th class="py-2 px-2 w-20 text-right">P (mm)</th>
+                      <th class="py-2 px-2 w-20 text-right">L (mm)</th>
+                      <th class="py-2 px-2 w-20 text-right">T (mm)</th>
+                      <th class="py-2 px-2 w-16 text-right">Qty Box</th>
+                      <th class="py-2 px-2.5 text-right w-24">Luas Karton</th>
+                      <th class="py-2 px-2.5 text-right w-24">Vol (m³)</th>
+                      <th class="py-2 px-1 w-8 text-center"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbodyBoxes" class="divide-y divide-border-subtle font-mono text-neutral-300">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT SIDEBAR: REALTIME 18-LINE HPP FINANCIAL ROLL-UP -->
+          <div class="w-full xl:w-96 flex-shrink-0 bg-surface-card border border-border-subtle rounded-xl p-4 lg:p-5 flex flex-col gap-4 shadow-sm sticky top-20">
+            <div class="flex items-center justify-between border-b border-border-subtle pb-3">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-accent-green">receipt_long</span>
+                <h3 class="font-display font-semibold text-xs text-white uppercase tracking-wider">HPP & Pricing Breakdown</h3>
+              </div>
+              <span id="summaryCheckBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-accent-green-bg text-accent-green border border-accent-green/30">VALID</span>
+            </div>
+
+            <!-- Physical Metrics Quick Row -->
+            <div class="grid grid-cols-3 gap-2 bg-surface-elevated p-2 rounded-lg border border-border-subtle text-center text-xs font-mono">
+              <div>
+                <span class="text-[10px] text-text-muted block">Solid m³</span>
+                <span id="resSolidM3" class="text-white font-semibold">0.0000</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-text-muted block">Plywood</span>
+                <span id="resSheets" class="text-white font-semibold">0.00 lbr</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-text-muted block">Finishing</span>
+                <span id="resFinM2" class="text-accent-green font-semibold">0.00 m²</span>
+              </div>
+            </div>
+
+            <!-- 18-Line Breakdown Table -->
+            <div class="flex flex-col gap-1.5 text-xs font-mono">
+              <div class="flex justify-between text-neutral-300">
+                <span class="text-text-subtle">Kayu Solid (Material)</span>
+                <span id="costTimberProc">Rp 0</span>
+              </div>
+              <div class="flex justify-between text-neutral-300">
+                <span class="text-text-subtle">Upah Tukang Kayu</span>
+                <span id="costCarpLabour">Rp 0</span>
+              </div>
+              <div class="flex justify-between text-neutral-300">
+                <span class="text-text-subtle">Fasteners & Lem</span>
+                <span id="costFasteners">Rp 0</span>
+              </div>
+              <div class="flex justify-between text-neutral-300">
+                <span class="text-text-subtle">Material Panels / Sheet</span>
+                <span id="costPanels">Rp 0</span>
+              </div>
+              <div class="flex justify-between text-neutral-300">
+                <span class="text-text-subtle">Finishing Chemical & Cat</span>
+                <span id="costFinMat">Rp 0</span>
+              </div>
+              <div class="flex justify-between text-neutral-300">
+                <span class="text-text-subtle">Amplas / Sanding Material</span>
+                <span id="costSandMat">Rp 0</span>
+              </div>
+              <div class="flex justify-between text-neutral-300">
+                <span class="text-text-subtle">Upah Gosok / Sanding</span>
+                <span id="costSandLab">Rp 0</span>
+              </div>
+              <div class="flex justify-between text-neutral-300">
+                <span class="text-text-subtle">Upah Semprot Finishing</span>
+                <span id="costFinLab">Rp 0</span>
+              </div>
+              <div class="flex justify-between text-neutral-300">
+                <span class="text-text-subtle">Hardware & Fitting</span>
+                <span id="costHardware">Rp 0</span>
+              </div>
+              <div class="flex justify-between text-purple-300">
+                <span class="text-purple-400">Custom Parts / Subkon</span>
+                <span id="costCustom">Rp 0</span>
+              </div>
+              <div class="flex justify-between text-neutral-300">
+                <span class="text-text-subtle">Packaging (Karton + Lab)</span>
+                <span id="costPacking">Rp 0</span>
+              </div>
+
+              <div class="border-t border-border-subtle my-1 pt-1.5 flex justify-between font-semibold text-white">
+                <span>DIRECT COST</span>
+                <span id="costDirect">Rp 0</span>
+              </div>
+              <div class="flex justify-between text-text-subtle text-[11px]">
+                <span>Misc Markup (5%)</span>
+                <span id="costMisc">Rp 0</span>
+              </div>
+              <div class="flex justify-between text-text-subtle text-[11px]">
+                <span>Overhead (12.99287%)</span>
+                <span id="costOverhead">Rp 0</span>
+              </div>
+
+              <!-- TOTAL HPP PABRIK (UNIT COST) -->
+              <div class="border-t border-border-strong mt-2 pt-2 bg-surface-elevated -mx-2 px-3 py-2 rounded-lg border flex flex-col gap-0.5">
+                <div class="flex justify-between items-baseline">
+                  <span class="text-xs font-semibold text-neutral-300 uppercase tracking-wider font-sans">HPP PABRIK (UNIT)</span>
+                  <span id="costUnitHpp" class="text-base font-bold text-white tracking-tight">Rp 0</span>
+                </div>
+                <span class="text-[10px] text-text-muted font-sans">Modal riil produksi per 1 unit item</span>
+              </div>
+
+              <!-- SELLING PRICE ESTIMATION -->
+              <div class="bg-accent-green-bg border border-accent-green/30 -mx-2 px-3 py-2 rounded-lg flex flex-col gap-0.5">
+                <div class="flex justify-between items-baseline">
+                  <span class="text-xs font-semibold text-accent-green uppercase tracking-wider font-sans">HARGA JUAL KLIEN</span>
+                  <span id="costSellingPrice" class="text-base font-bold text-accent-green tracking-tight">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-[10px] text-accent-green/80 font-sans">
+                  <span>Margin Profit: <span id="labelMarginPct">30%</span></span>
+                  <span id="costProfitUnit">+Rp 0</span>
+                </div>
+              </div>
+
+              <!-- PROJECT TOTAL EXTENSION -->
+              <div class="flex justify-between text-xs text-text-muted pt-1">
+                <span>Total Nilai Proyek:</span>
+                <span id="costProjectTotal" class="font-semibold text-white">Rp 0</span>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 2: MASTER TARIF & RATE CARD COCKPIT (THE 2x2 BENTO MATRIX) -->
+    <!-- ================================================================= -->
+    <div id="viewRates" class="hidden flex-col gap-6">
+      
+      <!-- Top Cockpit Control Strip -->
+      <div class="flex flex-wrap items-center justify-between gap-4 bg-surface-card p-4 rounded-xl border border-border-subtle shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-surface-elevated border border-border-strong flex items-center justify-center text-accent-green">
+            <span class="material-symbols-outlined text-[24px]">tune</span>
+          </div>
+          <div>
+            <h2 class="font-display font-semibold text-base text-white tracking-tight">Master Tarif & Rate Card Cockpit</h2>
+            <p class="text-xs text-text-muted">Setiap box memiliki pencarian real-time dan tabel rincian item dengan CRUD interaktif.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openAddParamModal()" class="h-8 px-3 rounded bg-accent-green-bg hover:bg-accent-green/20 border border-accent-green/30 text-accent-green text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <span class="material-symbols-outlined text-[16px]">add</span>
+            <span>+ Tambah Parameter Baru</span>
+          </button>
+          <button onclick="resetRatesToDefault()" class="h-8 px-3 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-xs text-neutral-300 flex items-center gap-1.5 transition-colors">
+            <span class="material-symbols-outlined text-[15px]">restore</span>
+            <span>Reset Standar Owner (2 Okt)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- THE 2x2 BENTO MATRIX CANVAS -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        
+        <!-- =============================================================== -->
+        <!-- BOX 1: SOLID TIMBER (Kayu Solid & Log Base) -->
+        <!-- =============================================================== -->
+        <section class="bg-surface-card border border-border-subtle rounded-xl p-5 flex flex-col gap-4 shadow-sm">
+          <!-- Box Header -->
+          <div class="flex items-start justify-between pb-3 border-b border-border-subtle">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-surface-elevated border border-border-subtle flex items-center justify-center text-accent-green">
+                <span class="material-symbols-outlined text-[22px]">forest</span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="font-display font-semibold text-sm text-white tracking-tight uppercase">1. Kayu Solid & Log Base</h3>
+                  <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-surface-elevated text-text-subtle border border-border-subtle">SEC-01</span>
+                </div>
+                <p class="text-xs text-text-muted">Kalkulasi tarif kayu m³ berbasis yield tier & upah komponen (Q-1, Q-3, Q-5, Q-17)</p>
+              </div>
+            </div>
+            <button onclick="openAddParamModal('Kayu Solid')" class="text-xs font-mono text-accent-green hover:underline flex items-center gap-1 bg-surface-elevated px-2 py-1 rounded border border-border-subtle">
+              <span class="material-symbols-outlined text-[14px]">add</span> Tambah Kayu
+            </button>
+          </div>
+
+          <!-- Formula Strip -->
+          <div class="p-2.5 bg-surface-elevated border border-border-subtle rounded-lg flex items-center justify-between text-xs font-mono">
+            <div class="flex items-center gap-2 text-text-subtle">
+              <span class="text-accent-amber font-semibold">FORMULA:</span>
+              <span class="text-white">Tarif = (Log Base + Proc) × Yield + Upah Tukang</span>
+            </div>
+            <span class="text-[11px] text-text-muted">Subkon Bubut: Upah = 0</span>
+          </div>
+
+          <!-- Base Inputs Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="bg-surface-elevated border border-border-subtle p-2.5 rounded-lg">
+              <label class="text-[10px] font-mono text-text-muted uppercase tracking-wider block">Log Jati (IDR/m³)</label>
+              <input type="number" id="inputLogTeak" onchange="updateRateInput('log_teak', Number(this.value))" class="mt-1 w-full bg-transparent border-0 p-0 text-white font-mono font-bold text-sm focus:ring-0" />
+              <span class="text-[10px] text-accent-green block mt-0.5">Q-5: Standar Rp 6.000.000</span>
+            </div>
+            <div class="bg-surface-elevated border border-border-subtle p-2.5 rounded-lg">
+              <label class="text-[10px] font-mono text-text-muted uppercase tracking-wider block">Log Mindi (IDR/m³)</label>
+              <input type="number" id="inputLogMindi" onchange="updateRateInput('log_mindi', Number(this.value))" class="mt-1 w-full bg-transparent border-0 p-0 text-white font-mono font-bold text-sm focus:ring-0" />
+              <span class="text-[10px] text-accent-green block mt-0.5">Q-5: Standar Rp 3.000.000</span>
+            </div>
+            <div class="bg-surface-elevated border border-border-subtle p-2.5 rounded-lg">
+              <label class="text-[10px] font-mono text-text-muted uppercase tracking-wider block">Upah/m³ Komponen</label>
+              <div id="dispLabCarp" class="mt-1 text-white font-mono font-bold text-sm">Rp 7.467.983</div>
+              <span class="text-[10px] text-text-muted block mt-0.5">Pool / STMV 32.56 m³</span>
+            </div>
+          </div>
+
+          <!-- Table Search Bar -->
+          <div class="flex items-center justify-between gap-3 pt-1">
+            <div class="relative flex-1">
+              <input type="text" id="searchTimberInput" oninput="filterTimberTable()" placeholder="Cari grade kayu / tier (contoh: Jati A, Curved, Mindi)..." class="w-full h-8 pl-8 pr-3 bg-surface-elevated border border-border-subtle rounded-lg text-xs text-white placeholder:text-text-muted focus:outline-none focus:border-border-strong font-sans" />
+              <span class="material-symbols-outlined text-[16px] text-text-muted absolute left-2.5 top-2">search</span>
+            </div>
+            <span id="timberCountLabel" class="text-xs font-mono text-text-muted">13 items</span>
+          </div>
+
+          <!-- Itemized Timber Rates Table -->
+          <div class="border border-border-subtle rounded-lg overflow-hidden max-h-[360px] overflow-y-auto custom-scroll">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="sticky top-0 bg-surface-elevated border-b border-border-subtle text-[11px] font-mono uppercase text-text-muted">
+                <tr>
+                  <th class="py-2 px-3">Grade Kayu / Spesifikasi</th>
+                  <th class="py-2 px-3 text-center">Yield</th>
+                  <th class="py-2 px-3 text-right">Log Base</th>
+                  <th class="py-2 px-3 text-right">Upah Tukang</th>
+                  <th class="py-2 px-3 text-right">Tarif Efektif/m³</th>
+                  <th class="py-2 px-2 text-center w-12">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="timberTableBody" class="divide-y divide-border-subtle font-mono text-neutral-300">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- BOX 2: PANELS & SHEET GOODS -->
+        <!-- =============================================================== -->
+        <section class="bg-surface-card border border-border-subtle rounded-xl p-5 flex flex-col gap-4 shadow-sm">
+          <!-- Box Header -->
+          <div class="flex items-start justify-between pb-3 border-b border-border-subtle">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-surface-elevated border border-border-subtle flex items-center justify-center text-accent-blue">
+                <span class="material-symbols-outlined text-[22px]">layers</span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="font-display font-semibold text-sm text-white tracking-tight uppercase">2. Panels & Sheet Goods</h3>
+                  <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-surface-elevated text-text-subtle border border-border-subtle">SEC-02</span>
+                </div>
+                <p class="text-xs text-text-muted">Katalog 35 tarif lembar plywood (3-24mm) x (RAW/MSF/MDF/TSF/TDF) + MDF</p>
+              </div>
+            </div>
+            <button onclick="openAddParamModal('Panel & Sheet')" class="text-xs font-mono text-accent-blue hover:underline flex items-center gap-1 bg-surface-elevated px-2 py-1 rounded border border-border-subtle">
+              <span class="material-symbols-outlined text-[14px]">add</span> Tambah Panel
+            </button>
+          </div>
+
+          <!-- Formula Strip -->
+          <div class="p-2.5 bg-surface-elevated border border-border-subtle rounded-lg flex items-center justify-between text-xs font-mono">
+            <div class="flex items-center gap-2 text-text-subtle">
+              <span class="text-accent-blue font-semibold">FORMULA:</span>
+              <span class="text-white">Harga Lembar = Raw Ply + (Veneer + Lem + Labour) × Muka</span>
+            </div>
+            <span class="text-[11px] text-text-muted">Lembar: 2440 x 1220 mm</span>
+          </div>
+
+          <!-- Base Inputs Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="bg-surface-elevated border border-border-subtle p-2.5 rounded-lg">
+              <label class="text-[10px] font-mono text-text-muted uppercase tracking-wider block">Raw Ply 18mm</label>
+              <input type="number" id="inputPly18" onchange="updatePlyPrice(18, Number(this.value))" class="mt-1 w-full bg-transparent border-0 p-0 text-white font-mono font-bold text-sm focus:ring-0" />
+              <span class="text-[10px] text-accent-blue block mt-0.5">Standar Rp 295.000</span>
+            </div>
+            <div class="bg-surface-elevated border border-border-subtle p-2.5 rounded-lg">
+              <label class="text-[10px] font-mono text-text-muted uppercase tracking-wider block">Veneer Jati / Lembar</label>
+              <div id="dispTeakAdd" class="mt-1 text-white font-mono font-bold text-sm">Rp 363.173</div>
+              <span class="text-[10px] text-text-muted block mt-0.5">Veneer + Lem + Labour</span>
+            </div>
+            <div class="bg-surface-elevated border border-border-subtle p-2.5 rounded-lg">
+              <label class="text-[10px] font-mono text-text-muted uppercase tracking-wider block">Veneer Mindi / Lembar</label>
+              <div id="dispMindiAdd" class="mt-1 text-white font-mono font-bold text-sm">Rp 138.173</div>
+              <span class="text-[10px] text-text-muted block mt-0.5">Veneer + Lem + Labour</span>
+            </div>
+          </div>
+
+          <!-- Table Search Bar -->
+          <div class="flex items-center justify-between gap-3 pt-1">
+            <div class="relative flex-1">
+              <input type="text" id="searchPanelInput" oninput="filterPanelTable()" placeholder="Cari tipe panel (contoh: PLY-18, TDF, 15, MDF)..." class="w-full h-8 pl-8 pr-3 bg-surface-elevated border border-border-subtle rounded-lg text-xs text-white placeholder:text-text-muted focus:outline-none focus:border-border-strong font-sans" />
+              <span class="material-symbols-outlined text-[16px] text-text-muted absolute left-2.5 top-2">search</span>
+            </div>
+            <span id="panelCountLabel" class="text-xs font-mono text-text-muted">36 items</span>
+          </div>
+
+          <!-- Itemized Panels Rates Table -->
+          <div class="border border-border-subtle rounded-lg overflow-hidden max-h-[360px] overflow-y-auto custom-scroll">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="sticky top-0 bg-surface-elevated border-b border-border-subtle text-[11px] font-mono uppercase text-text-muted">
+                <tr>
+                  <th class="py-2 px-3">Kode Panel</th>
+                  <th class="py-2 px-3">Nama Spesifikasi</th>
+                  <th class="py-2 px-3 text-center">Tebal</th>
+                  <th class="py-2 px-3 text-right">Harga Lembar (IDR)</th>
+                  <th class="py-2 px-3 text-right">Tarif / m²</th>
+                  <th class="py-2 px-2 text-center w-12">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="panelTableBody" class="divide-y divide-border-subtle font-mono text-neutral-300">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- BOX 3: FINISHING FLAT RATE -->
+        <!-- =============================================================== -->
+        <section class="bg-surface-card border border-border-subtle rounded-xl p-5 flex flex-col gap-4 shadow-sm">
+          <!-- Box Header -->
+          <div class="flex items-start justify-between pb-3 border-b border-border-subtle">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-surface-elevated border border-border-subtle flex items-center justify-center text-accent-amber">
+                <span class="material-symbols-outlined text-[22px]">format_paint</span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="font-display font-semibold text-sm text-white tracking-tight uppercase">3. Finishing Flat Rate (6-Muka)</h3>
+                  <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-surface-elevated text-text-subtle border border-border-subtle">SEC-03</span>
+                </div>
+                <p class="text-xs text-text-muted">Kalkulasi tarif finishing per m² total luas permukaan (Q-2: All 6 Faces)</p>
+              </div>
+            </div>
+            <button onclick="openAddParamModal('Finishing')" class="text-xs font-mono text-accent-amber hover:underline flex items-center gap-1 bg-surface-elevated px-2 py-1 rounded border border-border-subtle">
+              <span class="material-symbols-outlined text-[14px]">add</span> Tambah Bahan
+            </button>
+          </div>
+
+          <!-- Formula Strip -->
+          <div class="p-2.5 bg-surface-elevated border border-border-subtle rounded-lg flex items-center justify-between text-xs font-mono">
+            <div class="flex items-center gap-2 text-text-subtle">
+              <span class="text-accent-amber font-semibold">FORMULA:</span>
+              <span class="text-white">Finishing = Total Luas 6-Muka (m²) × Tarif Flat Terpadu</span>
+            </div>
+            <span class="text-[11px] text-accent-green font-semibold">Q-2 Active</span>
+          </div>
+
+          <!-- Base Inputs Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="bg-surface-elevated border border-border-subtle p-2.5 rounded-lg">
+              <label class="text-[10px] font-mono text-text-muted uppercase tracking-wider block">Chemical Cat (IDR)</label>
+              <input type="number" id="inputPaintTotal" onchange="updateRateInput('paint_total', Number(this.value))" class="mt-1 w-full bg-transparent border-0 p-0 text-white font-mono font-bold text-sm focus:ring-0" />
+              <span class="text-[10px] text-text-muted block mt-0.5">Pool Rp 84.137.326</span>
+            </div>
+            <div class="bg-surface-elevated border border-border-subtle p-2.5 rounded-lg">
+              <label class="text-[10px] font-mono text-text-muted uppercase tracking-wider block">Spray Labour (IDR)</label>
+              <input type="number" id="inputFinPool" onchange="updateRateInput('fin_pool', Number(this.value))" class="mt-1 w-full bg-transparent border-0 p-0 text-white font-mono font-bold text-sm focus:ring-0" />
+              <span class="text-[10px] text-text-muted block mt-0.5">Pool Rp 192.243.271</span>
+            </div>
+            <div class="bg-surface-elevated border border-border-subtle p-2.5 rounded-lg">
+              <label class="text-[10px] font-mono text-text-muted uppercase tracking-wider block">Tarif Flat Total/m²</label>
+              <div id="dispFinAllRate" class="mt-1 text-accent-amber font-mono font-bold text-sm">Rp 179.871 / m²</div>
+              <span class="text-[10px] text-accent-green block mt-0.5">4-Split Total Terpadu</span>
+            </div>
+          </div>
+
+          <!-- Table Search Bar -->
+          <div class="flex items-center justify-between gap-3 pt-1">
+            <div class="relative flex-1">
+              <input type="text" id="searchFinishingInput" oninput="filterFinishingTable()" placeholder="Cari komponen finishing (contoh: Cat, Amplas, Gosok, Semprot)..." class="w-full h-8 pl-8 pr-3 bg-surface-elevated border border-border-subtle rounded-lg text-xs text-white placeholder:text-text-muted focus:outline-none focus:border-border-strong font-sans" />
+              <span class="material-symbols-outlined text-[16px] text-text-muted absolute left-2.5 top-2">search</span>
+            </div>
+            <span id="finishingCountLabel" class="text-xs font-mono text-text-muted">5 items</span>
+          </div>
+
+          <!-- Itemized Finishing Table -->
+          <div class="border border-border-subtle rounded-lg overflow-hidden max-h-[360px] overflow-y-auto custom-scroll">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="sticky top-0 bg-surface-elevated border-b border-border-subtle text-[11px] font-mono uppercase text-text-muted">
+                <tr>
+                  <th class="py-2 px-3">Kode</th>
+                  <th class="py-2 px-3">Komponen Biaya</th>
+                  <th class="py-2 px-3 text-right">Pool Biaya (IDR)</th>
+                  <th class="py-2 px-3 text-right">Tarif / m²</th>
+                  <th class="py-2 px-3 text-right">Porsi (%)</th>
+                  <th class="py-2 px-2 text-center w-12">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="finishingTableBody" class="divide-y divide-border-subtle font-mono text-neutral-300">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- BOX 4: PACKAGING & OVERHEAD -->
+        <!-- =============================================================== -->
+        <section class="bg-surface-card border border-border-subtle rounded-xl p-5 flex flex-col gap-4 shadow-sm">
+          <!-- Box Header -->
+          <div class="flex items-start justify-between pb-3 border-b border-border-subtle">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-surface-elevated border border-border-subtle flex items-center justify-center text-yellow-500">
+                <span class="material-symbols-outlined text-[22px]">inventory</span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="font-display font-semibold text-sm text-white tracking-tight uppercase">4. Packaging & Overhead</h3>
+                  <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-surface-elevated text-text-subtle border border-border-subtle">SEC-04</span>
+                </div>
+                <p class="text-xs text-text-muted">Parameter karton box, upah packing kontainer, & persentase overhead pabrik</p>
+              </div>
+            </div>
+            <button onclick="openAddParamModal('Overhead')" class="text-xs font-mono text-yellow-500 hover:underline flex items-center gap-1 bg-surface-elevated px-2 py-1 rounded border border-border-subtle">
+              <span class="material-symbols-outlined text-[14px]">add</span> Tambah Param
+            </button>
+          </div>
+
+          <!-- Formula Strip -->
+          <div class="p-2.5 bg-surface-elevated border border-border-subtle rounded-lg flex items-center justify-between text-xs font-mono">
+            <div class="flex items-center gap-2 text-text-subtle">
+              <span class="text-yellow-500 font-semibold">FORMULA:</span>
+              <span class="text-white">Overhead = (Direct Cost + Misc 5%) × 12.99287%</span>
+            </div>
+            <span class="text-[11px] text-text-muted">Q-4: Baseline Rekonsiliasi</span>
+          </div>
+
+          <!-- Base Inputs Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="bg-surface-elevated border border-border-subtle p-2.5 rounded-lg">
+              <label class="text-[10px] font-mono text-text-muted uppercase tracking-wider block">Karton Board (IDR/m²)</label>
+              <input type="number" id="inputCartonM2" onchange="updateRateInput('carton_m2', Number(this.value))" class="mt-1 w-full bg-transparent border-0 p-0 text-white font-mono font-bold text-sm focus:ring-0" />
+              <span class="text-[10px] text-text-muted block mt-0.5">Standar Rp 42.000</span>
+            </div>
+            <div class="bg-surface-elevated border border-border-subtle p-2.5 rounded-lg">
+              <label class="text-[10px] font-mono text-text-muted uppercase tracking-wider block">Upah Packing (IDR/m³)</label>
+              <input type="number" id="inputPackLab" onchange="updateRateInput('pack_lab', Number(this.value))" class="mt-1 w-full bg-transparent border-0 p-0 text-white font-mono font-bold text-sm focus:ring-0" />
+              <span class="text-[10px] text-text-muted block mt-0.5">Standar Rp 100.000</span>
+            </div>
+            <div class="bg-surface-elevated border border-border-subtle p-2.5 rounded-lg">
+              <label class="text-[10px] font-mono text-text-muted uppercase tracking-wider block">Overhead Denominator</label>
+              <div id="dispOhRate" class="mt-1 text-yellow-400 font-mono font-bold text-sm">12.99287%</div>
+              <span class="text-[10px] text-text-muted block mt-0.5">Faktor Multiplier: 1.1299×</span>
+            </div>
+          </div>
+
+          <!-- Table Search Bar -->
+          <div class="flex items-center justify-between gap-3 pt-1">
+            <div class="relative flex-1">
+              <input type="text" id="searchOverheadInput" oninput="filterOverheadTable()" placeholder="Cari parameter packing / overhead..." class="w-full h-8 pl-8 pr-3 bg-surface-elevated border border-border-subtle rounded-lg text-xs text-white placeholder:text-text-muted focus:outline-none focus:border-border-strong font-sans" />
+              <span class="material-symbols-outlined text-[16px] text-text-muted absolute left-2.5 top-2">search</span>
+            </div>
+            <span id="overheadCountLabel" class="text-xs font-mono text-text-muted">7 items</span>
+          </div>
+
+          <!-- Itemized Overhead Table -->
+          <div class="border border-border-subtle rounded-lg overflow-hidden max-h-[360px] overflow-y-auto custom-scroll">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="sticky top-0 bg-surface-elevated border-b border-border-subtle text-[11px] font-mono uppercase text-text-muted">
+                <tr>
+                  <th class="py-2 px-3">Kode Param</th>
+                  <th class="py-2 px-3">Nama Parameter</th>
+                  <th class="py-2 px-3 text-right">Nilai Dasar</th>
+                  <th class="py-2 px-3 text-center">Satuan</th>
+                  <th class="py-2 px-3 text-right">Alokasi HPP</th>
+                  <th class="py-2 px-2 text-center w-12">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="overheadTableBody" class="divide-y divide-border-subtle font-mono text-neutral-300">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- BOX 5: MASTER HARDWARE & ACCESSORIES CATALOGUE -->
+        <!-- =============================================================== -->
+        <section class="col-span-1 xl:col-span-2 bg-surface-card border border-border-subtle rounded-xl p-5 flex flex-col gap-4 shadow-sm">
+          <div class="flex items-start justify-between pb-3 border-b border-border-subtle">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-surface-elevated border border-border-subtle flex items-center justify-center text-accent-amber">
+                <span class="material-symbols-outlined text-[22px]">hardware</span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="font-display font-semibold text-sm text-white tracking-tight uppercase">5. Master Katalog Hardware &amp; Fitting</h3>
+                  <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-surface-elevated text-text-subtle border border-border-subtle">SEC-05</span>
+                </div>
+                <p class="text-xs text-text-muted">Katalog SKU hardware proyek (bisa didaftarkan meskipun harga belum diketahui / TBD tanpa menyebabkan error).</p>
+              </div>
+            </div>
+            <button onclick="openAddHardwareModal()" class="text-xs font-mono text-accent-amber hover:underline flex items-center gap-1 bg-surface-elevated px-2.5 py-1 rounded border border-border-subtle">
+              <span class="material-symbols-outlined text-[14px]">add</span> + Tambah Hardware ke Katalog
+            </button>
+          </div>
+
+          <!-- Formula Strip -->
+          <div class="p-2.5 bg-surface-elevated border border-border-subtle rounded-lg flex items-center justify-between text-xs font-mono">
+            <div class="flex items-center gap-2 text-text-subtle">
+              <span class="text-accent-amber font-semibold">ALUR KERJA:</span>
+              <span class="text-white">Hardware tanpa harga tetap dihitung (Rp 0) &bull; Status otomatis ESTIMASI PARSIAL &bull; Harga bisa diisi manual di BOM</span>
+            </div>
+            <span class="text-[11px] text-accent-green font-semibold">Toleran &amp; Non-Blocking</span>
+          </div>
+
+          <!-- Table Search Bar -->
+          <div class="flex items-center justify-between gap-3 pt-1">
+            <div class="relative flex-1">
+              <input type="text" id="searchHdwCatalogInput" oninput="filterHardwareCatalogTable()" placeholder="Cari kode hardware atau deskripsi (contoh: I-00001, Engsel, Baut, Handle, Slide)..." class="w-full h-8 pl-8 pr-3 bg-surface-elevated border border-border-subtle rounded-lg text-xs text-white placeholder:text-text-muted focus:outline-none focus:border-border-strong font-sans" />
+              <span class="material-symbols-outlined text-[16px] text-text-muted absolute left-2.5 top-2">search</span>
+            </div>
+            <span id="hdwCatalogCountLabel" class="text-xs font-mono text-text-muted">12 items</span>
+          </div>
+
+          <!-- Itemized Hardware Catalog Table -->
+          <div class="border border-border-subtle rounded-lg overflow-hidden max-h-[360px] overflow-y-auto custom-scroll">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="sticky top-0 bg-surface-elevated border-b border-border-subtle text-[11px] font-mono uppercase text-text-muted">
+                <tr>
+                  <th class="py-2 px-3 w-28">Kode SKU</th>
+                  <th class="py-2 px-3 min-w-[200px]">Deskripsi Hardware</th>
+                  <th class="py-2 px-3 w-28">Vendor / Merek</th>
+                  <th class="py-2 px-3 text-center w-20">Satuan</th>
+                  <th class="py-2 px-3 text-right w-36">Harga Satuan (IDR)</th>
+                  <th class="py-2 px-3 text-center w-28">Status</th>
+                  <th class="py-2 px-2 text-center w-16">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="hdwCatalogTableBody" class="divide-y divide-border-subtle font-mono text-neutral-300">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================================================================= -->
+  
+  <!-- MODAL: ADD / EDIT HARDWARE TO CATALOG -->
+  <div id="modalAddHardware" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+    <div class="bg-surface-card border border-border-strong rounded-xl max-w-md w-full p-5 flex flex-col gap-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-border-subtle pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-accent-amber text-[20px]">hardware</span>
+          <h3 id="modalHdwTitle" class="font-display font-semibold text-sm text-white">+ Tambah Hardware ke Master Katalog</h3>
+        </div>
+        <button onclick="closeModal('modalAddHardware')" class="text-text-muted hover:text-white">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+      <div class="flex flex-col gap-3 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <span class="text-text-muted text-[11px] block">Kode Hardware / SKU:</span>
+            <input type="text" id="hdwCodeInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white font-mono text-xs focus:border-border-strong" placeholder="I-00011" />
+          </div>
+          <div>
+            <span class="text-text-muted text-[11px] block">Satuan (UOM):</span>
+            <input type="text" id="hdwUomInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white font-mono text-xs focus:border-border-strong" placeholder="pcs / set / m2" />
+          </div>
+        </div>
+        <div>
+          <span class="text-text-muted text-[11px] block">Deskripsi Hardware:</span>
+          <input type="text" id="hdwDescInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white text-xs focus:border-border-strong" placeholder="Contoh: Engsel pivot heavy duty 80kg" />
+        </div>
+        <div>
+          <span class="text-text-muted text-[11px] block">Vendor / Toko / Merek (Opsional):</span>
+          <input type="text" id="hdwVendorInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white text-xs focus:border-border-strong" placeholder="Contoh: Hafele / Dekkson / Toko Besi" />
+        </div>
+        <div>
+          <div class="flex justify-between items-center">
+            <span class="text-text-muted text-[11px] block">Harga Satuan (IDR):</span>
+            <span class="text-[10px] text-accent-amber font-mono">Boleh dikosongkan (TBD)</span>
+          </div>
+          <input type="number" id="hdwPriceInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-accent-amber font-mono font-bold text-xs focus:border-border-strong" placeholder="Kosongkan jika belum tahu harga" />
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-border-subtle">
+        <button onclick="closeModal('modalAddHardware')" class="px-3 py-1.5 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-xs text-neutral-300">
+          Batal
+        </button>
+        <button onclick="saveHardwareToCatalog()" class="px-4 py-1.5 rounded bg-accent-amber hover:bg-accent-amber/80 text-black font-semibold text-xs transition-all shadow-sm">
+          Simpan Hardware
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: ADD / EDIT PARAMETER (RATE COCKPIT CRUD) -->
+  <!-- ================================================================= -->
+  <div id="modalAddParam" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+    <div class="bg-surface-card border border-border-strong rounded-xl max-w-md w-full p-5 flex flex-col gap-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-border-subtle pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-accent-green text-[20px]">tune</span>
+          <h3 id="modalParamTitle" class="font-display font-semibold text-sm text-white">+ Tambah Parameter Tarif</h3>
+        </div>
+        <button onclick="closeModal('modalAddParam')" class="text-text-muted hover:text-white">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+      <div class="flex flex-col gap-3 text-xs">
+        <div>
+          <span class="text-text-muted text-[11px] block">Kategori Box:</span>
+          <select id="paramCategoryInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white text-xs focus:border-border-strong">
+            <option value="Kayu Solid">Kayu Solid (Box 1)</option>
+            <option value="Panel & Sheet">Panels & Sheet Goods (Box 2)</option>
+            <option value="Finishing">Finishing Flat (Box 3)</option>
+            <option value="Overhead">Packaging & Overhead (Box 4)</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <span class="text-text-muted text-[11px] block">Kode Parameter:</span>
+            <input type="text" id="paramCodeInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white font-mono text-xs focus:border-border-strong" placeholder="MAHONI_A" />
+          </div>
+          <div>
+            <span class="text-text-muted text-[11px] block">Satuan:</span>
+            <input type="text" id="paramUnitInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white font-mono text-xs focus:border-border-strong" placeholder="IDR/m³ atau IDR/lbr" />
+          </div>
+        </div>
+        <div>
+          <span class="text-text-muted text-[11px] block">Nama Parameter / Spesifikasi:</span>
+          <input type="text" id="paramNameInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white text-xs focus:border-border-strong" placeholder="Contoh: Kayu Mahoni Super Tier A" />
+        </div>
+        <div>
+          <span class="text-text-muted text-[11px] block">Nilai Dasar / Tarif (IDR):</span>
+          <input type="number" id="paramValueInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-accent-green font-mono font-bold text-xs focus:border-border-strong" placeholder="4500000" />
+        </div>
+        <div>
+          <span class="text-text-muted text-[11px] block">Aturan Alokasi ke HPP:</span>
+          <select id="paramAllocationInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-text-subtle text-xs focus:border-border-strong">
+            <option value="DIRECT">Direct Material (Biaya Langsung)</option>
+            <option value="LABOUR">Upah / Labour</option>
+            <option value="OVERHEAD">Overhead Pabrik</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-border-subtle">
+        <button onclick="closeModal('modalAddParam')" class="px-3 py-1.5 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-xs text-neutral-300">
+          Batal
+        </button>
+        <button onclick="saveCustomRateParam()" class="px-4 py-1.5 rounded bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition-all shadow-sm">
+          Simpan Parameter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 1: INGESTION AUDIT POPUP -->
+<!-- MODAL 1: INGESTION AUDIT POPUP (UPLOAD PREVIEW) -->
+  <!-- ================================================================= -->
+  <div id="modalIngestionAudit" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+    <div class="bg-surface-card border border-border-strong rounded-xl max-w-xl w-full p-5 flex flex-col gap-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-border-subtle pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-accent-amber text-[20px]">fact_check</span>
+          <h3 class="font-display font-semibold text-sm text-white">Hasil Audit Ingesti Excel</h3>
+        </div>
+        <button onclick="closeModal('modalIngestionAudit')" class="text-text-muted hover:text-white">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+      <div class="flex flex-col gap-3 text-xs">
+        <div class="bg-surface-elevated p-3 rounded-lg border border-border-subtle flex flex-col gap-1">
+          <div class="flex justify-between text-neutral-200">
+            <span>Nama File:</span>
+            <span id="auditFileName" class="font-mono text-white">data.xlsx</span>
+          </div>
+          <div class="flex justify-between text-neutral-200">
+            <span>Jumlah Item Ditemukan:</span>
+            <span id="auditItemCount" class="font-mono text-accent-green font-semibold">0 Item</span>
+          </div>
+          <div class="flex justify-between text-neutral-200">
+            <span>Total Baris Komponen:</span>
+            <span id="auditRowCount" class="font-mono text-white">0 Baris</span>
+          </div>
+          <div class="flex justify-between text-neutral-200">
+            <span>Kolom Tambahan Kustom:</span>
+            <span id="auditCustomCols" class="font-mono text-purple-400">Tidak ada</span>
+          </div>
+        </div>
+
+        <div id="auditWarningBox" class="bg-accent-amber-bg border border-accent-amber/30 p-3 rounded-lg flex flex-col gap-1.5 hidden">
+          <span class="font-semibold text-accent-amber flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">warning</span>
+            <span>Perhatian Sebelum Diproses:</span>
+          </span>
+          <ul id="auditWarningList" class="list-disc list-inside text-neutral-300 space-y-0.5 text-[11px]"></ul>
+        </div>
+
+        <p class="text-text-muted text-[11px]">
+          Smart Merge aktif: Item dengan kode sama akan memperbarui dimensi cutlist, tanpa menghapus harga manual yang sudah Anda ketik di aplikasi.
+        </p>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-border-subtle">
+        <button onclick="closeModal('modalIngestionAudit')" class="px-3 py-1.5 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-xs text-neutral-300">
+          Batalkan
+        </button>
+        <button id="btnConfirmIngest" onclick="applyIngestedData()" class="px-4 py-1.5 rounded bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition-all shadow-sm">
+          Setuju / Tetap Hitung
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL 2: LOCK BOM REVISION NOTE -->
+  <!-- ================================================================= -->
+  <div id="modalLockBom" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+    <div class="bg-surface-card border border-border-strong rounded-xl max-w-md w-full p-5 flex flex-col gap-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-border-subtle pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-accent-blue text-[20px]">lock</span>
+          <h3 class="font-display font-semibold text-sm text-white">Kunci BOM (Lock Snapshot)</h3>
+        </div>
+        <button onclick="closeModal('modalLockBom')" class="text-text-muted hover:text-white">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+      <div class="flex flex-col gap-2.5 text-xs">
+        <p class="text-text-subtle">
+          Mengunci BOM akan membekukan cutlist, harga acuan saat ini, dan kalkulasi HPP ke status <span class="text-white font-semibold">LOCKED</span>. Perubahan tarif pabrik di masa mendatang tidak akan menggeser angka item ini.
+        </p>
+        <div>
+          <span class="text-text-muted text-[11px] block">Catatan Wajib Alasan Kunci / Revisi:</span>
+          <textarea id="lockRevisionReason" rows="3" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded p-2 text-white text-xs focus:border-border-strong focus:outline-none" placeholder="Contoh: Disetujui sesuai gambar kerja revisi 2, harga final penawaran klien."></textarea>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-border-subtle">
+        <button onclick="closeModal('modalLockBom')" class="px-3 py-1.5 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-xs text-neutral-300">
+          Batal
+        </button>
+        <button onclick="executeLockActiveItem()" class="px-4 py-1.5 rounded bg-accent-blue hover:bg-accent-blue/80 text-black font-semibold text-xs transition-all shadow-sm">
+          Kunci Sekarang
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL 3: REVISION COMPARISON DIFF TABLE -->
+  <!-- ================================================================= -->
+  <div id="modalRevisionDiff" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+    <div class="bg-surface-card border border-border-strong rounded-xl max-w-4xl w-full p-5 flex flex-col gap-4 shadow-2xl max-h-[85vh] overflow-hidden">
+      <div class="flex items-center justify-between border-b border-border-subtle pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-accent-green text-[20px]">compare</span>
+          <h3 class="font-display font-semibold text-sm text-white">Komparasi Revisi (Rev 1 vs Rev 2)</h3>
+        </div>
+        <button onclick="closeModal('modalRevisionDiff')" class="text-text-muted hover:text-white">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto custom-scroll pr-1 flex flex-col gap-4 text-xs">
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-surface-elevated p-3 rounded-lg border border-border-subtle flex flex-col gap-1">
+            <span class="text-text-muted text-[11px] uppercase tracking-wider font-semibold">Versi Terkunci Sebelumnya</span>
+            <div id="diffOldHpp" class="text-lg font-bold text-white font-mono">Rp 0</div>
+            <span id="diffOldNotes" class="text-[11px] text-text-subtle">Rev 1: Baseline</span>
+          </div>
+          <div class="bg-surface-elevated p-3 rounded-lg border border-border-subtle flex flex-col gap-1">
+            <span class="text-text-muted text-[11px] uppercase tracking-wider font-semibold">Versi Aktif (Draft)</span>
+            <div id="diffNewHpp" class="text-lg font-bold text-accent-green font-mono">Rp 0</div>
+            <div id="diffHppDelta" class="text-[11px] font-semibold font-mono text-neutral-300">Selisih: Rp 0</div>
+          </div>
+        </div>
+
+        <div class="border border-border-subtle rounded-lg overflow-hidden">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-surface-subtle text-[11px] text-text-muted font-mono uppercase">
+              <tr>
+                <th class="p-2">Part</th>
+                <th class="p-2">Perubahan Dimensi / Spesifikasi</th>
+                <th class="p-2 text-right">Biaya Lama</th>
+                <th class="p-2 text-right">Biaya Baru</th>
+                <th class="p-2 text-right">Selisih</th>
+              </tr>
+            </thead>
+            <tbody id="diffTableBody" class="divide-y divide-border-subtle font-mono text-neutral-300">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+      <div class="flex items-center justify-end pt-2 border-t border-border-subtle">
+        <button onclick="closeModal('modalRevisionDiff')" class="px-4 py-1.5 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-xs text-white">
+          Tutup Komparasi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL 4: ADD CUSTOM COLUMN -->
+  <!-- ================================================================= -->
+  <div id="modalAddCustomCol" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+    <div class="bg-surface-card border border-border-strong rounded-xl max-w-sm w-full p-5 flex flex-col gap-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-border-subtle pb-3">
+        <h3 class="font-display font-semibold text-sm text-white">+ Tambah Kolom Kustom</h3>
+        <button onclick="closeModal('modalAddCustomCol')" class="text-text-muted hover:text-white">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+      <div class="flex flex-col gap-3 text-xs">
+        <div>
+          <span class="text-text-muted text-[11px] block">Nama Kolom:</span>
+          <input type="text" id="customColNameInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white text-xs focus:border-border-strong" placeholder="Contoh: Vendor, No_SPK, Lokasi_Rak" />
+        </div>
+        <div>
+          <span class="text-text-muted text-[11px] block">Tipe Data:</span>
+          <select id="customColTypeInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2 py-1 text-white text-xs focus:border-border-strong">
+            <option value="text">Teks Bebas</option>
+            <option value="number">Angka / Dimensi</option>
+            <option value="price">Biaya Satuan (IDR)</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-border-subtle">
+        <button onclick="closeModal('modalAddCustomCol')" class="px-3 py-1.5 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-xs text-neutral-300">
+          Batal
+        </button>
+        <button onclick="executeAddCustomColumn()" class="px-4 py-1.5 rounded bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition-all shadow-sm">
+          Tambahkan Kolom
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL 5: SUPABASE CLOUD SYNC -->
+  <!-- ================================================================= -->
+  <div id="modalSupabase" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+    <div class="bg-surface-card border border-border-strong rounded-xl max-w-md w-full p-5 flex flex-col gap-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-border-subtle pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-accent-blue text-[20px]">database</span>
+          <h3 class="font-display font-semibold text-sm text-white">Konfigurasi Cloud Supabase</h3>
+        </div>
+        <button onclick="closeModal('modalSupabase')" class="text-text-muted hover:text-white">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+      <div class="flex flex-col gap-3 text-xs">
+        <div>
+          <span class="text-text-muted text-[11px] block">Project URL Supabase:</span>
+          <input type="text" id="supabaseUrlInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white font-mono text-xs focus:border-border-strong" placeholder="https://xyz.supabase.co" />
+        </div>
+        <div>
+          <span class="text-text-muted text-[11px] block">Anon / Public API Key:</span>
+          <input type="password" id="supabaseKeyInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white font-mono text-xs focus:border-border-strong" placeholder="eyJhbGciOi..." />
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-border-subtle">
+        <button onclick="clearSupabaseConfig()" class="px-3 py-1.5 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-xs text-accent-rose">
+          Putus Cloud
+        </button>
+        <button onclick="saveSupabaseConfig()" class="px-4 py-1.5 rounded bg-accent-blue text-black font-semibold text-xs">
+          Simpan & Sambungkan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION SCRIPT LOGIC -->
+  <script>
+    
+    // =========================================================================
+    // HARDWARE CATALOG & TOLERANT EMPTY PRICE SYSTEM
+    // =========================================================================
+    let hardwareCatalog = [
+      { code: "I-00001", description: "NANASAN + BAUT JCBC SST", vendor: "Standard", uom: "pcs", price: 3500 },
+      { code: "I-00002", description: "PLAT SIKU SST", vendor: "Standard", uom: "pcs", price: 6000 },
+      { code: "I-00003", description: "Nylon glides 25 mm", vendor: "Standard", uom: "pcs", price: 1500 },
+      { code: "I-00004", description: "Hinge, concealed, soft close 35 mm", vendor: "Hafele", uom: "pcs", price: 28000 },
+      { code: "I-00005", description: "Hinge, butt brass 50 mm", vendor: "Solid Brass", uom: "pcs", price: 17500 },
+      { code: "I-00006", description: "Drawer slide, ball bearing 450 mm", vendor: "Dekkson", uom: "set", price: 85000 },
+      { code: "I-00007", description: "Mirror 5 mm, cut to size", vendor: "Asahimas", uom: "m2", price: 265000 },
+      { code: "I-00008", description: "Handle, solid brass 128 mm", vendor: "Custom", uom: "pcs", price: 95000 },
+      { code: "I-00009", description: "Magnetic catch", vendor: "Standard", uom: "pcs", price: 6500 },
+      { code: "I-00010", description: "Shelf support pin 5 mm SST", vendor: "Standard", uom: "pcs", price: 1200 },
+      { code: "I-00011", description: "Engsel Pivot Custom (TBD)", vendor: "Bengkel Luar", uom: "set", price: null },
+      { code: "I-00012", description: "Kunci Laci Central (TBD)", vendor: "Vendor Toko", uom: "pcs", price: null }
+    ];
+
+    function renderHardwareCatalogTable() {
+      const q = (document.getElementById('searchHdwCatalogInput')?.value || '').toLowerCase();
+      const tbody = document.getElementById('hdwCatalogTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const filtered = hardwareCatalog.filter(h => 
+        h.code.toLowerCase().includes(q) || 
+        h.description.toLowerCase().includes(q) || 
+        (h.vendor || '').toLowerCase().includes(q)
+      );
+
+      const countLabel = document.getElementById('hdwCatalogCountLabel');
+      if (countLabel) countLabel.textContent = `${filtered.length} items`;
+
+      filtered.forEach(h => {
+        const hasPrice = h.price !== null && h.price !== undefined && h.price !== '' && Number(h.price) > 0;
+        const tr = document.createElement('tr');
+        tr.className = `hover:bg-surface-elevated/40 transition-colors ${!hasPrice ? 'bg-accent-amber-bg/5' : ''}`;
+        tr.innerHTML = `
+          <td class="py-2 px-3">
+            <span class="font-mono text-accent-amber font-semibold text-xs">${h.code}</span>
+          </td>
+          <td class="py-2 px-3 font-sans font-medium text-white text-xs">${h.description}</td>
+          <td class="py-2 px-3 text-text-subtle text-xs">${h.vendor || '-'}</td>
+          <td class="py-2 px-3 text-center text-text-subtle font-mono text-[11px]">${h.uom || 'pcs'}</td>
+          <td class="py-2 px-3 text-right">
+            ${hasPrice 
+              ? `<span class="font-mono font-bold text-white text-xs">${formatIDR(h.price)}</span>`
+              : `<span class="text-accent-amber font-mono text-[11px] bg-accent-amber-bg px-2 py-0.5 rounded border border-accent-amber/30">TBD / Kosong</span>`
+            }
+          </td>
+          <td class="py-2 px-3 text-center">
+            ${hasPrice 
+              ? `<span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-accent-green-bg text-accent-green border border-accent-green/30">Siap</span>`
+              : `<span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-accent-amber-bg text-accent-amber border border-accent-amber/30">Harga Kosong</span>`
+            }
+          </td>
+          <td class="py-2 px-2 text-center">
+            <button onclick="editCatalogHardware('${h.code}')" class="text-text-muted hover:text-white mr-1.5" title="Edit Hardware"><span class="material-symbols-outlined text-[15px]">edit</span></button>
+            <button onclick="deleteCatalogHardware('${h.code}')" class="text-text-muted hover:text-accent-rose" title="Hapus Hardware"><span class="material-symbols-outlined text-[15px]">delete</span></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterHardwareCatalogTable() {
+      renderHardwareCatalogTable();
+    }
+
+    let editingHdwCode = null;
+
+    function openAddHardwareModal() {
+      editingHdwCode = null;
+      document.getElementById('modalHdwTitle').textContent = '+ Tambah Hardware ke Master Katalog';
+      document.getElementById('hdwCodeInput').value = 'I-' + String(hardwareCatalog.length + 1).padStart(5, '0');
+      document.getElementById('hdwCodeInput').disabled = false;
+      document.getElementById('hdwDescInput').value = '';
+      document.getElementById('hdwVendorInput').value = '';
+      document.getElementById('hdwUomInput').value = 'pcs';
+      document.getElementById('hdwPriceInput').value = '';
+      openModal('modalAddHardware');
+    }
+
+    function editCatalogHardware(code) {
+      const item = hardwareCatalog.find(h => h.code === code);
+      if (!item) return;
+      editingHdwCode = code;
+      document.getElementById('modalHdwTitle').textContent = 'Edit Hardware: ' + code;
+      document.getElementById('hdwCodeInput').value = item.code;
+      document.getElementById('hdwCodeInput').disabled = true;
+      document.getElementById('hdwDescInput').value = item.description || '';
+      document.getElementById('hdwVendorInput').value = item.vendor || '';
+      document.getElementById('hdwUomInput').value = item.uom || 'pcs';
+      document.getElementById('hdwPriceInput').value = (item.price !== null && item.price !== undefined) ? item.price : '';
+      openModal('modalAddHardware');
+    }
+
+    function saveHardwareToCatalog() {
+      const code = document.getElementById('hdwCodeInput').value.trim().toUpperCase();
+      const desc = document.getElementById('hdwDescInput').value.trim();
+      const vendor = document.getElementById('hdwVendorInput').value.trim();
+      const uom = document.getElementById('hdwUomInput').value.trim() || 'pcs';
+      const rawPrice = document.getElementById('hdwPriceInput').value.trim();
+      const price = rawPrice === '' ? null : Number(rawPrice);
+
+      if (!code || !desc) {
+        alert('Mohon isi kode dan deskripsi hardware.');
+        return;
+      }
+
+      if (editingHdwCode) {
+        const item = hardwareCatalog.find(h => h.code === editingHdwCode);
+        if (item) {
+          item.description = desc;
+          item.vendor = vendor;
+          item.uom = uom;
+          item.price = price;
+        }
+      } else {
+        hardwareCatalog.push({ code, description: desc, vendor, uom, price });
+      }
+
+      closeModal('modalAddHardware');
+      renderHardwareCatalogTable();
+      triggerAutoSave();
+      alert(`Hardware ${code} berhasil disimpan ke master katalog!`);
+    }
+
+    function deleteCatalogHardware(code) {
+      if (confirm(`Hapus hardware ${code} dari katalog?`)) {
+        hardwareCatalog = hardwareCatalog.filter(h => h.code !== code);
+        renderHardwareCatalogTable();
+        triggerAutoSave();
+      }
+    }
+
+    function onSelectHardwareFromCatalog(idx, code) {
+      const item = getActiveItem();
+      if (!item || !item.hardware || !item.hardware[idx]) return;
+      const cleanCode = (code || '').trim().toUpperCase();
+      item.hardware[idx].item_code = cleanCode;
+
+      const found = hardwareCatalog.find(h => h.code === cleanCode);
+      if (found) {
+        if (!item.hardware[idx].description || item.hardware[idx].description === 'HARDWARE BARU') {
+          item.hardware[idx].description = found.description;
+        }
+        if (found.price !== null && found.price !== undefined && (item.hardware[idx].unit_price === null || item.hardware[idx].unit_price === undefined)) {
+          item.hardware[idx].unit_price = found.price;
+        }
+      }
+      renderWorkspace();
+      triggerAutoSave();
+    }
+
+    // =========================================================================
+    // STATE INITIALIZATION
+    // =========================================================================
+    let rateInputs = {"_source": "docs/SPEC-costing-system.md C1.5, RATES tab of the stack-test workbooks (rates_version 2026-09-29, finishing split 30 Sep). 27 base figures, cells C6-C27, C47-C50, C55.", "log_teak": 6000000, "log_mindi": 3000000, "meranti_sawn": 8500000, "processing": 598978, "carp_pool": 270175017, "carp_deduct": 0.1, "comp_m3": 32.56, "yield_A": 3.5, "yield_AC": 4.6, "yield_B": 2.5, "yield_C": 2.0, "yield_D": 1.5, "yield_MER": 1.5, "fast_total": 57000000, "paint_total": 84137326, "abrasive_total": 27713000, "fin_pool": 192243271, "sand_pool": 131550191, "sand_keep": 0.65, "fin_m2": 2166, "oh_pool": 308560109, "stmv_direct": 2374841837, "carton_m2": 42000, "pack_lab": 100000, "grp_a": 24000, "misc_pct": 0.05, "usd_idr": 16000};
+    let panelInputs = {"_source": "docs/SPEC-costing-system.md C1.1 PANEL_SHEETS, base figures from INPUTS C24-C37. Same values the app seeds (app/src/db/seed-data.ts PANEL_RATE_INPUTS); kept here so the engine's own tests need no database.", "sheet_L": 2.44, "sheet_W": 1.22, "glue_tape": 10424, "ven_teak": 110000, "ven_mindi": 20000, "ven_len": 2.5, "ven_labour": 57142.86, "ply": {"3": 77500, "6": 115000, "9": 172500, "12": 215000, "15": 260000, "18": 295000, "24": 375000}};
+    let norms = {"_source": "docs/SPEC-costing-system.md C1.3 NORMS tab rows 5-19, plus the two norms added 30 Sep on the LISTS tab (F10, F11).", "TIER_A_MIN_LEN": 1000, "TIER_D_MAX_VOL": 0.0005, "TIER_D_MAX_LEN": 300, "SHEET_L": 2440, "SHEET_W": 1220, "SHEET_KERF": 5, "WASTE_REUSE_MIN": 0.25, "OFFCUT_HANDLING": 0.05, "CARTON_ADD": 40, "CARTON_MIN_M2": 0.15, "CARTON_BAND_B": 1.0, "CARTON_BAND_C": 2.5, "CARTON_BAND_D": 4.0, "KD_PACK_FACTOR": 0.0, "FIN_EXPOSED_ONLY": 0, "NARROW_MAX_SECTION": 40, "NARROW_MAX_LEN": 1500};
+    let items = [{"id": "item_1", "header": {"item_code": "OV-505 B", "item_name": "SHELF BELOW VANITY COUNTER", "project_qty": 236, "finish_recipe": "OTHER", "flatpack": "Y", "overall_l": 1200, "overall_w": 550, "overall_h": 438, "notes": "OV 178 + BV 58"}, "boxes": [{"box_no": 1, "contents": "KD flat, 1 package", "l": 1220, "w": 620, "h": 50, "qty": 1}], "solid": [{"line_no": 1, "material": "TEAK", "component": "KAKI", "l": 450, "w": 33, "t": 33, "qty": 4, "exposed": "Y", "curved": "N", "note": "old BOM: BELAH 40"}, {"line_no": 2, "material": "TEAK", "component": "FRAME PANJANG", "l": 1150, "w": 33, "t": 33, "qty": 2, "exposed": "Y", "curved": "N", "note": "old BOM: BELAH 25"}, {"line_no": 3, "material": "TEAK", "component": "FRAME PENDEK", "l": 500, "w": 33, "t": 33, "qty": 2, "exposed": "Y", "curved": "N"}, {"line_no": 4, "material": "TEAK", "component": "SLAT", "l": 720, "w": 25, "t": 16, "qty": 17, "exposed": "Y", "curved": "N"}], "panels": [], "hardware": [{"line_no": 1, "description": "NANASAN + BAUT JCBC SST", "qty": 4, "uom": "pcs", "unit_price": 3500, "note": "old BOM price"}, {"line_no": 2, "description": "PLAT SIKU SST", "qty": 4, "uom": "pcs", "unit_price": 6000, "note": "old BOM price"}], "custom": [], "custom_columns": [], "status": "LOCKED", "version": 1, "revision_note": "Initial baseline verified stack fixture", "locked_snapshot": null, "target_margin": 30}, {"id": "item_2", "header": {"item_code": "ID-OV-506", "item_name": "A/C COVER @OVERWATER (KECIL)", "project_qty": 109, "finish_recipe": "OTHER", "flatpack": "N", "overall_l": 1165, "overall_w": 291, "overall_h": 407}, "boxes": [], "solid": [{"line_no": 1, "material": "TEAK", "component": "KAYU SAMPING", "l": 375, "w": 275, "t": 20, "qty": 2, "exposed": "Y", "curved": "N", "note": "old BOM: BELAH 25; 275 mm wide board"}, {"line_no": 2, "material": "TEAK", "component": "SLAT", "l": 1165, "w": 22, "t": 16, "qty": 17, "exposed": "Y", "curved": "N"}], "panels": [], "hardware": [], "custom": [], "custom_columns": [], "status": "DRAFT", "version": 1, "revision_note": "", "locked_snapshot": null, "target_margin": 30}, {"id": "item_3", "header": {"item_code": "TB-02", "item_name": "Side Table", "project_qty": 118, "finish_recipe": "OTHER", "flatpack": "N", "overall_l": 900, "overall_w": 700, "overall_h": 650, "notes": "OWV+BV 89 + 29; old BOM note: DIMENSI BASE & LEG ONLY"}, "boxes": [{"box_no": 1, "contents": "PACKING SESUAI PL (2 JADI 1)", "l": 610, "w": 710, "h": 800, "qty": 0.5}], "solid": [{"line_no": 1, "material": "TEAK", "component": "KAYU UNTUK TIANG", "l": 630, "w": 120, "t": 120, "qty": 1, "exposed": "Y", "curved": "Y", "note": "old BOM: BELAH 40, LABOR BUBUT"}, {"line_no": 2, "material": "TEAK", "component": "KAYU BASE", "l": 540, "w": 420, "t": 30, "qty": 1, "exposed": "Y", "curved": "N"}], "panels": [], "hardware": [{"line_no": 1, "description": "LABOR BUBUT", "qty": 1, "uom": "ls", "unit_price": 30000, "note": "old BOM: outside lathe"}, {"line_no": 2, "description": "PLAT UNDER TOP (plat besi rosok)", "qty": 1, "uom": "pcs", "unit_price": 100000, "note": "old BOM: PRICE FROM ROSOK"}, {"line_no": 3, "description": "LASER CUTTING", "qty": 1, "uom": "ls", "unit_price": 100000, "note": "old BOM: PRICE FROM BUDI LASER CUTTING"}, {"line_no": 4, "description": "POWDER COAT PLAT UNDER TOP", "qty": 1, "uom": "ls", "unit_price": 45000}, {"line_no": 5, "description": "GLIDER", "qty": 4, "uom": "pcs", "unit_price": 2500}], "custom": [], "custom_columns": [], "status": "DRAFT", "version": 1, "revision_note": "", "locked_snapshot": null, "target_margin": 30}, {"id": "item_4", "header": {"item_code": "AA-04B", "item_name": "VANITY MIRROR @ OVERWATER", "project_qty": 91, "finish_recipe": "NATURAL WD 02", "flatpack": "N", "overall_l": 1990, "overall_w": 750, "overall_h": 70, "notes": "0WV; assembled, carton from the overall size"}, "boxes": [], "solid": [{"line_no": 1, "material": "MINDI", "component": "FRAME PANJANG", "l": 1990, "w": 70, "t": 55, "qty": 2, "exposed": "Y", "curved": "N", "note": "old BOM: BELAH 65"}, {"line_no": 2, "material": "MINDI", "component": "FRAME PENDEK", "l": 750, "w": 70, "t": 55, "qty": 2, "exposed": "Y", "curved": "N", "note": "old BOM: BELAH 80 (SUDUT)"}, {"line_no": 3, "material": "MINDI", "component": "RUMAH LAMPU", "l": 245, "w": 245, "t": 70, "qty": 2, "exposed": "Y", "curved": "Y", "note": "C4.5 #2: lamp housing, turned"}, {"line_no": 4, "material": "MINDI", "component": "KAYU SUDUT", "l": 180, "w": 180, "t": 70, "qty": 4, "exposed": "Y", "curved": "Y", "note": "C4.5 #2: corner block, turned"}], "panels": [{"line_no": 1, "panel_type": "PLY-12-RAW", "component": "PLYWOOD 12 MM PALM", "l": 1990, "w": 750, "t": 12, "qty": 1, "exposed_faces": 0, "note": "old BOM 190,000 from Mojo; new estimate uses the rate card sheet price"}], "hardware": [{"line_no": 1, "description": "HARDWARE GANTUNGAN", "qty": 2, "uom": "pcs", "unit_price": 6000, "note": "old BOM: ESTIMATE FROM PANGESTU"}, {"line_no": 2, "description": "KACA 5 MM + BLASTING", "qty": 1, "uom": "pcs", "unit_price": 420200, "note": "old BOM: PRICE FROM CN GLASS"}, {"line_no": 3, "description": "LAMPU LED", "qty": 1, "uom": "pcs", "unit_price": 55000}, {"line_no": 4, "description": "POWER SUPPLY", "qty": 1, "uom": "pcs", "unit_price": 116000}, {"line_no": 5, "description": "SWITCH", "qty": 1, "uom": "pcs", "unit_price": 50000}, {"line_no": 6, "description": "PLASTIK FILM", "qty": 2, "uom": "pcs", "unit_price": 8000}, {"line_no": 7, "description": "KABEL", "qty": 6, "uom": "m", "unit_price": 8000}], "custom": [], "custom_columns": [], "status": "DRAFT", "version": 1, "revision_note": "", "locked_snapshot": null, "target_margin": 30}];
+
+    let activeItemId = items.length > 0 ? items[0].id : null;
+    let currentRates = {};
+    let currentPanelRates = {};
+    let activeCustomColTarget = 'solid';
+    let pendingIngestedData = null;
+    let autoSaveTimer = null;
+    let supabaseClient = null;
+
+    // Initialize engine rates
+    function recalculateDerivedRates() {
+      currentRates = BOMEngine.deriveRates(rateInputs, norms);
+      currentPanelRates = BOMEngine.derivePanelRates(panelInputs);
+      Object.assign(currentRates, currentPanelRates);
+      renderRatesCockpit();
+    }
+
+    // =========================================================================
+    // CURRENCY FORMATTING (#,##0 STRICT IDR INTEGER)
+    // =========================================================================
+    function formatIDR(num) {
+      if (num === null || num === undefined || isNaN(num)) return 'Rp 0';
+      const rounded = Math.round(num);
+      return 'Rp ' + rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    function formatNumberOnly(num) {
+      if (num === null || num === undefined || isNaN(num)) return '0';
+      return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    // =========================================================================
+    // NAVIGATION TABS
+    // =========================================================================
+    function switchMainTab(tab) {
+      const viewBom = document.getElementById('viewBom');
+      const viewRates = document.getElementById('viewRates');
+      const navBtnBom = document.getElementById('navBtnBom');
+      const navBtnRates = document.getElementById('navBtnRates');
+
+      if (tab === 'bom') {
+        viewBom.classList.remove('hidden');
+        viewRates.classList.add('hidden');
+        navBtnBom.className = 'px-3.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 bg-neutral-800 text-white shadow-sm';
+        navBtnRates.className = 'px-3.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 text-text-subtle hover:text-white';
+      } else {
+        viewBom.classList.add('hidden');
+        viewRates.classList.remove('hidden');
+        viewRates.classList.add('flex');
+        navBtnRates.className = 'px-3.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 bg-neutral-800 text-white shadow-sm';
+        navBtnBom.className = 'px-3.5 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 text-text-subtle hover:text-white';
+        renderRatesCockpit();
+      }
+    }
+
+    // =========================================================================
+    // ITEM WORKSPACE RENDERING & CALCULATIONS
+    // =========================================================================
+    function getActiveItem() {
+      return items.find(i => i.id === activeItemId) || items[0];
+    }
+
+    function renderItemList() {
+      const container = document.getElementById('itemListContainer');
+      const searchTerm = (document.getElementById('itemSearchInput')?.value || '').toLowerCase();
+      container.innerHTML = '';
+
+      const filtered = items.filter(it => {
+        const code = (it.header.item_code || '').toLowerCase();
+        const name = (it.header.item_name || '').toLowerCase();
+        return code.includes(searchTerm) || name.includes(searchTerm);
+      });
+
+      document.getElementById('navItemCount').textContent = `(${items.length} Items)`;
+      document.getElementById('bomCountBadge').textContent = items.length;
+
+      filtered.forEach(it => {
+        const res = BOMEngine.costItem(it, currentRates, norms);
+        const isSelected = it.id === activeItemId;
+        const isLocked = it.status === 'LOCKED';
+        const hasWarning = res.missing_fields.length > 0;
+
+        const card = document.createElement('div');
+        card.className = `p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-1.5 ${
+          isSelected 
+            ? 'bg-surface-elevated border-accent-blue/60 shadow-md ring-1 ring-accent-blue/30' 
+            : 'bg-surface-card border-border-subtle hover:border-border-strong'
+        }`;
+        card.onclick = () => selectItem(it.id);
+
+        let badgeHtml = '';
+        if (isLocked) {
+          badgeHtml = `<span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-accent-blue-bg text-accent-blue border border-accent-blue/30">Locked (Rev ${it.version})</span>`;
+        } else if (hasWarning) {
+          badgeHtml = `<span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-accent-amber-bg text-accent-amber border border-accent-amber/30">Estimasi Parsial</span>`;
+        } else {
+          badgeHtml = `<span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-accent-green-bg text-accent-green border border-accent-green/30">Lengkap</span>`;
+        }
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-1">
+            <span class="font-display font-semibold text-xs text-white truncate">${it.header.item_code || 'UNTITLED'}</span>
+            ${badgeHtml}
+          </div>
+          <span class="text-[11px] text-text-muted truncate">${it.header.item_name || 'Tanpa nama item'}</span>
+          <div class="flex items-baseline justify-between pt-1 border-t border-border-subtle/50 text-xs font-mono">
+            <span class="text-text-muted text-[10px]">HPP:</span>
+            <span class="text-white font-medium">${formatIDR(res.unit_cost)}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function selectItem(id) {
+      activeItemId = id;
+      renderItemList();
+      renderWorkspace();
+    }
+
+    function renderWorkspace() {
+      const item = getActiveItem();
+      if (!item) return;
+
+      const isLocked = item.status === 'LOCKED';
+      const res = BOMEngine.costItem(item, currentRates, norms);
+
+      // Header fields
+      document.getElementById('headerItemCode').value = item.header.item_code || '';
+      document.getElementById('headerItemName').value = item.header.item_name || '';
+      document.getElementById('headerQty').value = item.header.project_qty || 1;
+      document.getElementById('headerDimL').value = item.header.overall_l || '';
+      document.getElementById('headerDimW').value = item.header.overall_w || '';
+      document.getElementById('headerDimH').value = item.header.overall_h || '';
+      document.getElementById('headerFinishRecipe').value = item.header.finish_recipe || 'NC NATURAL';
+      document.getElementById('headerTargetMargin').value = item.target_margin !== undefined ? item.target_margin : 30;
+
+      // Badges
+      const badgeLock = document.getElementById('badgeLockStatus');
+      const btnLock = document.getElementById('btnLockBom');
+      const btnNewRev = document.getElementById('btnNewRevision');
+      const btnDiff = document.getElementById('btnDiffCompare');
+
+      if (isLocked) {
+        badgeLock.textContent = 'LOCKED (Read-Only)';
+        badgeLock.className = 'text-xs font-mono px-2 py-0.5 rounded font-medium border bg-accent-blue-bg text-accent-blue border-accent-blue/30';
+        btnLock.classList.add('hidden');
+        btnNewRev.classList.remove('hidden');
+        btnDiff.classList.remove('hidden');
+      } else {
+        badgeLock.textContent = 'DRAFT';
+        badgeLock.className = 'text-xs font-mono px-2 py-0.5 rounded font-medium border bg-surface-subtle text-neutral-300 border-border-subtle';
+        btnLock.classList.remove('hidden');
+        btnNewRev.classList.add('hidden');
+        if (item.version > 1 && item.locked_snapshot) {
+          btnDiff.classList.remove('hidden');
+        } else {
+          btnDiff.classList.add('hidden');
+        }
+      }
+      document.getElementById('badgeRevision').textContent = `Rev ${item.version || 1}`;
+
+      // Warnings
+      const bannerMissing = document.getElementById('bannerMissingPrices');
+      if (res.missing_fields.length > 0) {
+        bannerMissing.classList.remove('hidden');
+        document.getElementById('bannerMissingText').textContent = `${res.missing_fields.length} part belum memiliki harga. HPP dihitung parsial.`;
+      } else {
+        bannerMissing.classList.add('hidden');
+      }
+
+      const bannerUnusual = document.getElementById('bannerUnusualDimensions');
+      if (res.unusual_dimensions.length > 0) {
+        bannerUnusual.classList.remove('hidden');
+        document.getElementById('bannerUnusualText').textContent = res.unusual_dimensions.join('; ');
+      } else {
+        bannerUnusual.classList.add('hidden');
+      }
+
+      // Render Tables
+      renderSolidTable(item, res, isLocked);
+      renderPanelsTable(item, res, isLocked);
+      renderHardwareTable(item, res, isLocked);
+      renderCustomTable(item, res, isLocked);
+      renderBoxesTable(item, res, isLocked);
+
+      // Render Financial Summary Sidebar
+      renderFinancialSummary(item, res);
+    }
+
+    function renderSolidTable(item, res, isLocked) {
+      const tbody = document.getElementById('tbodySolid');
+      tbody.innerHTML = '';
+      const lines = item.solid || [];
+      document.getElementById('countSolidRows').textContent = `(${lines.length} part)`;
+
+      lines.forEach((l, idx) => {
+        const r = res.solid[idx] || {};
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-surface-elevated/40 transition-colors';
+        tr.innerHTML = `
+          <td class="py-1.5 px-2.5 text-center text-text-muted">${l.line_no || idx + 1}</td>
+          <td class="py-1.5 px-2.5">
+            <select onchange="updatePartField('solid', ${idx}, 'material', this.value)" class="bg-transparent border-0 text-white font-medium p-0 focus:ring-0 text-xs" ${isLocked ? 'disabled' : ''}>
+              <option value="TEAK" ${l.material === 'TEAK' ? 'selected' : ''}>TEAK</option>
+              <option value="MINDI" ${l.material === 'MINDI' ? 'selected' : ''}>MINDI</option>
+              <option value="MERANTI" ${l.material === 'MERANTI' ? 'selected' : ''}>MERANTI</option>
+              <option value="OTHER" ${l.material === 'OTHER' ? 'selected' : ''}>OTHER</option>
+            </select>
+          </td>
+          <td class="py-1.5 px-2.5">
+            <input type="text" value="${l.component || ''}" onchange="updatePartField('solid', ${idx}, 'component', this.value)" class="w-full bg-transparent border-0 p-0 text-xs text-white focus:ring-0" placeholder="Komponen..." ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${l.l !== undefined ? l.l : ''}" onchange="updatePartField('solid', ${idx}, 'l', Number(this.value))" class="w-14 bg-transparent border-0 p-0 text-right text-xs text-neutral-200 focus:ring-0 font-mono" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${l.w !== undefined ? l.w : ''}" onchange="updatePartField('solid', ${idx}, 'w', Number(this.value))" class="w-14 bg-transparent border-0 p-0 text-right text-xs text-neutral-200 focus:ring-0 font-mono" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${l.t !== undefined ? l.t : ''}" onchange="updatePartField('solid', ${idx}, 't', Number(this.value))" class="w-14 bg-transparent border-0 p-0 text-right text-xs text-neutral-200 focus:ring-0 font-mono" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${l.qty || 1}" onchange="updatePartField('solid', ${idx}, 'qty', Number(this.value))" class="w-10 bg-transparent border-0 p-0 text-right text-xs text-white focus:ring-0 font-mono" min="1" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-center">
+            <input type="checkbox" ${l.exposed !== 'N' ? 'checked' : ''} onchange="updatePartField('solid', ${idx}, 'exposed', this.checked ? 'Y' : 'N')" class="rounded bg-surface-elevated border-border-subtle text-accent-green focus:ring-0 cursor-pointer" ${isLocked ? 'disabled' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-center">
+            <input type="checkbox" ${l.curved === 'Y' ? 'checked' : ''} onchange="updatePartField('solid', ${idx}, 'curved', this.checked ? 'Y' : 'N')" class="rounded bg-surface-elevated border-border-subtle text-accent-amber focus:ring-0 cursor-pointer" ${isLocked ? 'disabled' : ''} />
+          </td>
+          <td class="py-1.5 px-2.5 text-center">
+            <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-surface-subtle text-text-subtle border border-border-subtle">${r.auto_tier || '-'}</span>
+          </td>
+          <td class="py-1.5 px-2 text-center">
+            <input type="checkbox" ${l.worked_outside ? 'checked' : ''} onchange="updatePartField('solid', ${idx}, 'worked_outside', this.checked)" class="rounded bg-surface-elevated border-border-subtle text-purple-400 focus:ring-0 cursor-pointer" ${isLocked ? 'disabled' : ''} title="Centang jika dibubut/ukir luar (anti double upah)" />
+          </td>
+          <td class="py-1.5 px-2.5 text-right font-medium text-white">${formatIDR(r.cost)}</td>
+          <td class="py-1.5 px-1 text-center">
+            ${!isLocked ? `<button onclick="deleteRow('solid', ${idx})" class="text-text-muted hover:text-accent-rose"><span class="material-symbols-outlined text-[15px]">close</span></button>` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderPanelsTable(item, res, isLocked) {
+      const tbody = document.getElementById('tbodyPanels');
+      tbody.innerHTML = '';
+      const lines = item.panels || [];
+      document.getElementById('countPanelRows').textContent = `(${lines.length} part)`;
+
+      lines.forEach((l, idx) => {
+        const r = res.panels[idx] || {};
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-surface-elevated/40 transition-colors';
+        tr.innerHTML = `
+          <td class="py-1.5 px-2.5 text-center text-text-muted">${l.line_no || idx + 1}</td>
+          <td class="py-1.5 px-2.5">
+            <input type="text" value="${l.panel_type || 'PLY-18-TDF'}" onchange="updatePartField('panels', ${idx}, 'panel_type', this.value)" class="w-full bg-transparent border-0 p-0 text-xs text-white font-mono focus:ring-0" placeholder="PLY-18-TDF..." ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2.5">
+            <input type="text" value="${l.component || ''}" onchange="updatePartField('panels', ${idx}, 'component', this.value)" class="w-full bg-transparent border-0 p-0 text-xs text-white focus:ring-0" placeholder="Komponen..." ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${l.l !== undefined ? l.l : ''}" onchange="updatePartField('panels', ${idx}, 'l', Number(this.value))" class="w-14 bg-transparent border-0 p-0 text-right text-xs text-neutral-200 focus:ring-0 font-mono" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${l.w !== undefined ? l.w : ''}" onchange="updatePartField('panels', ${idx}, 'w', Number(this.value))" class="w-14 bg-transparent border-0 p-0 text-right text-xs text-neutral-200 focus:ring-0 font-mono" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${l.t !== undefined ? l.t : ''}" onchange="updatePartField('panels', ${idx}, 't', Number(this.value))" class="w-14 bg-transparent border-0 p-0 text-right text-xs text-neutral-200 focus:ring-0 font-mono" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${l.qty || 1}" onchange="updatePartField('panels', ${idx}, 'qty', Number(this.value))" class="w-10 bg-transparent border-0 p-0 text-right text-xs text-white focus:ring-0 font-mono" min="1" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-center">
+            <select onchange="updatePartField('panels', ${idx}, 'exposed_faces', Number(this.value))" class="bg-transparent border-0 text-neutral-300 p-0 focus:ring-0 text-xs" ${isLocked ? 'disabled' : ''}>
+              <option value="1" ${l.exposed_faces === 1 ? 'selected' : ''}>1 Muka</option>
+              <option value="2" ${l.exposed_faces === 2 ? 'selected' : ''}>2 Muka</option>
+            </select>
+          </td>
+          <td class="py-1.5 px-2 text-right text-text-subtle">${r.pieces_per_sheet || '-'}</td>
+          <td class="py-1.5 px-2 text-right text-accent-blue font-medium">${r.sheets_charged !== null ? Number(r.sheets_charged).toFixed(2) : '-'}</td>
+          <td class="py-1.5 px-2.5 text-right font-medium text-white">${formatIDR(r.cost)}</td>
+          <td class="py-1.5 px-1 text-center">
+            ${!isLocked ? `<button onclick="deleteRow('panels', ${idx})" class="text-text-muted hover:text-accent-rose"><span class="material-symbols-outlined text-[15px]">close</span></button>` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderHardwareTable(item, res, isLocked) {
+      const tbody = document.getElementById('tbodyHardware');
+      tbody.innerHTML = '';
+      const lines = item.hardware || [];
+      document.getElementById('countHardwareRows').textContent = `(${lines.length} part)`;
+
+      lines.forEach((l, idx) => {
+        const r = res.hardware[idx] || {};
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-surface-elevated/40 transition-colors';
+        tr.innerHTML = `
+          <td class="py-1.5 px-2.5 text-center text-text-muted">${l.line_no || idx + 1}</td>
+          <td class="py-1.5 px-2.5">
+            <input type="text" value="${l.item_code || ''}" onchange="updatePartField('hardware', ${idx}, 'item_code', this.value)" class="w-full bg-transparent border-0 p-0 text-xs text-white font-mono focus:ring-0" placeholder="I-00001..." ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2.5">
+            <input type="text" value="${l.description || ''}" onchange="updatePartField('hardware', ${idx}, 'description', this.value)" class="w-full bg-transparent border-0 p-0 text-xs text-white focus:ring-0" placeholder="Deskripsi..." ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${l.qty || 1}" onchange="updatePartField('hardware', ${idx}, 'qty', Number(this.value))" class="w-14 bg-transparent border-0 p-0 text-right text-xs text-white focus:ring-0 font-mono" min="1" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2.5 text-right">
+            <input type="number" value="${(l.unit_price !== undefined && l.unit_price !== null && l.unit_price !== '') ? l.unit_price : ''}" onchange="updatePartField('hardware', ${idx}, 'unit_price', this.value === '' ? null : Number(this.value))" class="w-24 bg-surface-subtle/80 border ${(l.unit_price === null || l.unit_price === undefined || l.unit_price === '') ? 'border-accent-amber/60 bg-accent-amber-bg/15' : 'border-border-subtle'} rounded px-1.5 py-0.5 text-right text-xs text-accent-amber focus:ring-0 font-mono" placeholder="Ketik harga..." ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2.5 text-right font-medium text-white">
+            ${(r.cost !== null && r.cost !== undefined && Number(r.cost) > 0)
+              ? formatIDR(r.cost)
+              : `<span class="text-accent-amber font-mono text-[11px] bg-accent-amber-bg px-2 py-0.5 rounded border border-accent-amber/30">Belum ada harga</span>`
+            }
+          </td>
+          <td class="py-1.5 px-1 text-center">
+            ${!isLocked ? `<button onclick="deleteRow('hardware', ${idx})" class="text-text-muted hover:text-accent-rose"><span class="material-symbols-outlined text-[15px]">close</span></button>` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderCustomTable(item, res, isLocked) {
+      const tbody = document.getElementById('tbodyCustom');
+      tbody.innerHTML = '';
+      const lines = item.custom || [];
+      document.getElementById('countCustomRows').textContent = `(${lines.length} item)`;
+
+      lines.forEach((l, idx) => {
+        const r = res.custom[idx] || {};
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-surface-elevated/40 transition-colors';
+        tr.innerHTML = `
+          <td class="py-1.5 px-2.5 text-center text-text-muted">${l.line_no || idx + 1}</td>
+          <td class="py-1.5 px-2.5">
+            <input type="text" value="${l.category || 'Jasa/Subkon'}" onchange="updatePartField('custom', ${idx}, 'category', this.value)" class="w-full bg-transparent border-0 p-0 text-xs text-purple-300 font-medium focus:ring-0" placeholder="Kategori..." ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2.5">
+            <input type="text" value="${l.description || ''}" onchange="updatePartField('custom', ${idx}, 'description', this.value)" class="w-full bg-transparent border-0 p-0 text-xs text-white focus:ring-0" placeholder="Deskripsi..." ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${l.qty || 1}" onchange="updatePartField('custom', ${idx}, 'qty', Number(this.value))" class="w-14 bg-transparent border-0 p-0 text-right text-xs text-white focus:ring-0 font-mono" min="1" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2.5 text-right">
+            <input type="number" value="${l.unit_price !== undefined ? l.unit_price : ''}" onchange="updatePartField('custom', ${idx}, 'unit_price', Number(this.value))" class="w-24 bg-surface-subtle/80 border border-border-subtle rounded px-1.5 py-0.5 text-right text-xs text-purple-400 focus:ring-0 font-mono" placeholder="Ketik harga..." ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2.5 text-right font-medium text-white">${formatIDR(r.cost)}</td>
+          <td class="py-1.5 px-1 text-center">
+            ${!isLocked ? `<button onclick="deleteRow('custom', ${idx})" class="text-text-muted hover:text-accent-rose"><span class="material-symbols-outlined text-[15px]">close</span></button>` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderBoxesTable(item, res, isLocked) {
+      const tbody = document.getElementById('tbodyBoxes');
+      tbody.innerHTML = '';
+      const lines = item.boxes || [];
+
+      lines.forEach((b, idx) => {
+        const r = res.boxes[idx] || {};
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-surface-elevated/40 transition-colors';
+        tr.innerHTML = `
+          <td class="py-1.5 px-2.5 text-center text-text-muted">${b.box_no || idx + 1}</td>
+          <td class="py-1.5 px-2.5">
+            <input type="text" value="${b.contents || ''}" onchange="updatePartField('boxes', ${idx}, 'contents', this.value)" class="w-full bg-transparent border-0 p-0 text-xs text-white focus:ring-0" placeholder="Isi kemasan..." ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${b.l !== undefined ? b.l : ''}" onchange="updatePartField('boxes', ${idx}, 'l', Number(this.value))" class="w-16 bg-transparent border-0 p-0 text-right text-xs text-white focus:ring-0 font-mono" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${b.w !== undefined ? b.w : ''}" onchange="updatePartField('boxes', ${idx}, 'w', Number(this.value))" class="w-16 bg-transparent border-0 p-0 text-right text-xs text-white focus:ring-0 font-mono" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${b.h !== undefined ? b.h : ''}" onchange="updatePartField('boxes', ${idx}, 'h', Number(this.value))" class="w-16 bg-transparent border-0 p-0 text-right text-xs text-white focus:ring-0 font-mono" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2 text-right">
+            <input type="number" value="${b.qty || 1}" onchange="updatePartField('boxes', ${idx}, 'qty', Number(this.value))" class="w-12 bg-transparent border-0 p-0 text-right text-xs text-white focus:ring-0 font-mono" min="1" ${isLocked ? 'readonly' : ''} />
+          </td>
+          <td class="py-1.5 px-2.5 text-right text-text-subtle">${r.m2 !== undefined ? Number(r.m2).toFixed(3) + ' m²' : '-'}</td>
+          <td class="py-1.5 px-2.5 text-right text-text-subtle">${r.m3 !== undefined ? Number(r.m3).toFixed(4) + ' m³' : '-'}</td>
+          <td class="py-1.5 px-1 text-center">
+            ${!isLocked ? `<button onclick="deleteRow('boxes', ${idx})" class="text-text-muted hover:text-accent-rose"><span class="material-symbols-outlined text-[15px]">close</span></button>` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderFinancialSummary(item, res) {
+      document.getElementById('resSolidM3').textContent = Number(res.solid_m3 || 0).toFixed(4);
+      document.getElementById('resSheets').textContent = Number(res.panel_sheets || 0).toFixed(2) + ' lbr';
+      document.getElementById('resFinM2').textContent = Number(res.finishing_m2 || 0).toFixed(2) + ' m²';
+
+      document.getElementById('costTimberProc').textContent = formatIDR(res.timber_wood_processing);
+      document.getElementById('costCarpLabour').textContent = formatIDR(res.carpentry_labour);
+      document.getElementById('costFasteners').textContent = formatIDR(res.fasteners);
+      document.getElementById('costPanels').textContent = formatIDR(res.panels_cost);
+      document.getElementById('costFinMat').textContent = formatIDR(res.fin_mat);
+      document.getElementById('costSandMat').textContent = formatIDR(res.sand_mat);
+      document.getElementById('costSandLab').textContent = formatIDR(res.sand_lab);
+      document.getElementById('costFinLab').textContent = formatIDR(res.fin_lab);
+      document.getElementById('costHardware').textContent = formatIDR(res.hardware_cost);
+      document.getElementById('costCustom').textContent = formatIDR(res.custom_cost);
+      document.getElementById('costPacking').textContent = formatIDR(res.packing);
+
+      document.getElementById('costDirect').textContent = formatIDR(res.direct);
+      document.getElementById('costMisc').textContent = formatIDR(res.misc);
+      document.getElementById('costOverhead').textContent = formatIDR(res.overhead);
+      document.getElementById('costUnitHpp').textContent = formatIDR(res.unit_cost);
+
+      const marginPct = item.target_margin !== undefined ? item.target_margin : 30;
+      const sellingPrice = res.unit_cost * (1 + marginPct / 100);
+      const profitUnit = sellingPrice - res.unit_cost;
+      const projectTotal = sellingPrice * (item.header.project_qty || 1);
+
+      document.getElementById('labelMarginPct').textContent = `${marginPct}%`;
+      document.getElementById('costSellingPrice').textContent = formatIDR(sellingPrice);
+      document.getElementById('costProfitUnit').textContent = `+${formatIDR(profitUnit)}`;
+      document.getElementById('costProjectTotal').textContent = formatIDR(projectTotal);
+
+      const checkBadge = document.getElementById('summaryCheckBadge');
+      if (res.missing_fields.length > 0) {
+        checkBadge.textContent = 'ESTIMASI PARSIAL';
+        checkBadge.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-accent-amber-bg text-accent-amber border border-accent-amber/30';
+      } else {
+        checkBadge.textContent = 'VALID';
+        checkBadge.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-accent-green-bg text-accent-green border border-accent-green/30';
+      }
+    }
+
+    // =========================================================================
+    // FIELD UPDATES & AUTO-SAVE (DEBOUNCED 800MS)
+    // =========================================================================
+    function updateActiveHeader(field, val) {
+      const item = getActiveItem();
+      if (!item) return;
+      item.header[field] = val;
+      renderItemList();
+      renderWorkspace();
+      triggerAutoSave();
+    }
+
+    function updateActiveMargin(margin) {
+      const item = getActiveItem();
+      if (!item) return;
+      item.target_margin = margin;
+      renderWorkspace();
+      triggerAutoSave();
+    }
+
+    function updatePartField(category, idx, field, val) {
+      const item = getActiveItem();
+      if (!item || !item[category] || !item[category][idx]) return;
+      item[category][idx][field] = val;
+      renderWorkspace();
+      renderItemList();
+      triggerAutoSave();
+    }
+
+    function addNewRow(category) {
+      const item = getActiveItem();
+      if (!item) return;
+      if (!item[category]) item[category] = [];
+
+      if (category === 'solid') {
+        item.solid.push({ line_no: item.solid.length + 1, material: 'TEAK', component: 'PART BARU', l: 1000, w: 50, t: 30, qty: 1, exposed: 'Y', curved: 'N' });
+      } else if (category === 'panels') {
+        item.panels.push({ line_no: item.panels.length + 1, panel_type: 'PLY-18-TDF', component: 'PANEL BARU', l: 1200, w: 600, t: 18, qty: 1, exposed_faces: 2 });
+      } else if (category === 'hardware') {
+        item.hardware.push({ line_no: item.hardware.length + 1, item_code: 'I-NEW', description: 'HARDWARE BARU', qty: 1, unit_price: 10000 });
+      } else if (category === 'custom') {
+        item.custom.push({ line_no: item.custom.length + 1, category: 'Subkon/Jasa', description: 'PART / JASA BEBAS', qty: 1, unit_price: 50000 });
+      } else if (category === 'boxes') {
+        item.boxes.push({ box_no: item.boxes.length + 1, contents: 'Box komponen', l: 1000, w: 500, h: 100, qty: 1 });
+      }
+      renderWorkspace();
+      triggerAutoSave();
+    }
+
+    function deleteRow(category, idx) {
+      const item = getActiveItem();
+      if (!item || !item[category]) return;
+      item[category].splice(idx, 1);
+      renderWorkspace();
+      triggerAutoSave();
+    }
+
+    function triggerAutoSave() {
+      const dot = document.getElementById('saveDot');
+      const text = document.getElementById('saveStatusText');
+      dot.className = 'w-2 h-2 rounded-full bg-accent-amber animate-pulse';
+      text.textContent = 'Menyimpan...';
+
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => {
+        saveToLocalStorage();
+        dot.className = 'w-2 h-2 rounded-full bg-accent-green';
+        text.textContent = 'Tersimpan Lokal';
+      }, 800);
+    }
+
+    function saveToLocalStorage() {
+      const payload = {
+        items,
+        rateInputs,
+        panelInputs,
+        norms,
+        saved_at: new Date().toISOString()
+      };
+      try {
+        localStorage.setItem('plv_bom_data', JSON.stringify(payload));
+      } catch (e) {
+        console.warn('LocalStorage save error:', e);
+      }
+    }
+
+    function loadFromLocalStorage() {
+      try {
+        const raw = localStorage.getItem('plv_bom_data');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.items && parsed.items.length > 0) items = parsed.items;
+          if (parsed.rateInputs) rateInputs = parsed.rateInputs;
+          if (parsed.panelInputs) panelInputs = parsed.panelInputs;
+          if (parsed.norms) norms = parsed.norms;
+        }
+      } catch (e) {
+        console.warn('LocalStorage load error:', e);
+      }
+    }
+
+    // =========================================================================
+    // LOCK BOM & REVISION SYSTEM
+    // =========================================================================
+    function promptLockActiveItem() {
+      document.getElementById('lockRevisionReason').value = '';
+      openModal('modalLockBom');
+    }
+
+    function executeLockActiveItem() {
+      const item = getActiveItem();
+      if (!item) return;
+
+      const reason = document.getElementById('lockRevisionReason').value.trim();
+      item.status = 'LOCKED';
+      item.revision_note = reason || 'Locked snapshot';
+      
+      // Freeze immutable snapshot of parts, rates, and unit cost
+      const res = BOMEngine.costItem(item, currentRates, norms);
+      item.locked_snapshot = {
+        version: item.version || 1,
+        rates_snapshot: JSON.parse(JSON.stringify(currentRates)),
+        solid: JSON.parse(JSON.stringify(item.solid || [])),
+        panels: JSON.parse(JSON.stringify(item.panels || [])),
+        hardware: JSON.parse(JSON.stringify(item.hardware || [])),
+        custom: JSON.parse(JSON.stringify(item.custom || [])),
+        unit_cost: res.unit_cost,
+        timestamp: new Date().toISOString(),
+        reason: item.revision_note
+      };
+
+      closeModal('modalLockBom');
+      renderItemList();
+      renderWorkspace();
+      triggerAutoSave();
+    }
+
+    function createRevisionActiveItem() {
+      const item = getActiveItem();
+      if (!item) return;
+
+      // Unlock and advance version number
+      item.status = 'DRAFT';
+      item.version = (item.version || 1) + 1;
+      item.revision_note = '';
+
+      renderItemList();
+      renderWorkspace();
+      triggerAutoSave();
+    }
+
+    function openRevisionDiffModal() {
+      const item = getActiveItem();
+      if (!item || !item.locked_snapshot) return;
+
+      const snap = item.locked_snapshot;
+      const resCurrent = BOMEngine.costItem(item, currentRates, norms);
+
+      document.getElementById('diffOldHpp').textContent = formatIDR(snap.unit_cost);
+      document.getElementById('diffNewHpp').textContent = formatIDR(resCurrent.unit_cost);
+      
+      const delta = resCurrent.unit_cost - snap.unit_cost;
+      const deltaSign = delta >= 0 ? '+' : '';
+      document.getElementById('diffHppDelta').textContent = `Selisih: ${deltaSign}${formatIDR(delta)}`;
+      document.getElementById('diffOldNotes').textContent = `Rev ${snap.version}: ${snap.reason || 'Kunci sebelumnya'}`;
+
+      // Render parts diff rows
+      const tbody = document.getElementById('diffTableBody');
+      tbody.innerHTML = '';
+
+      // Compare solid lines
+      const maxSolid = Math.max((snap.solid || []).length, (item.solid || []).length);
+      for (let i = 0; i < maxSolid; i++) {
+        const oldP = snap.solid[i];
+        const newP = item.solid[i];
+
+        const tr = document.createElement('tr');
+        if (oldP && newP) {
+          const dimOld = `${oldP.l}x${oldP.w}x${oldP.t} (${oldP.qty}x)`;
+          const dimNew = `${newP.l}x${newP.w}x${newP.t} (${newP.qty}x)`;
+          const changed = dimOld !== dimNew || oldP.material !== newP.material;
+          tr.className = changed ? 'bg-accent-amber-bg/30 text-accent-amber' : '';
+          tr.innerHTML = `
+            <td class="p-2 font-medium">${newP.component || oldP.component}</td>
+            <td class="p-2">${changed ? `${dimOld} → <span class="font-bold underline">${dimNew}</span>` : dimNew}</td>
+            <td class="p-2 text-right">${oldP.l ? 'Terkalkulasi' : '-'}</td>
+            <td class="p-2 text-right">${newP.l ? 'Terkalkulasi' : '-'}</td>
+            <td class="p-2 text-right font-semibold">${changed ? 'Berubah' : 'Sama'}</td>
+          `;
+        } else if (newP) {
+          tr.className = 'bg-accent-green-bg/30 text-accent-green';
+          tr.innerHTML = `
+            <td class="p-2 font-medium">+ ${newP.component} (Part Baru)</td>
+            <td class="p-2">${newP.l}x${newP.w}x${newP.t}</td>
+            <td class="p-2 text-right">-</td>
+            <td class="p-2 text-right">Terkalkulasi</td>
+            <td class="p-2 text-right font-semibold text-accent-green">Added</td>
+          `;
+        }
+        tbody.appendChild(tr);
+      }
+
+      openModal('modalRevisionDiff');
+    }
+
+    // =========================================================================
+    // DYNAMIC CUSTOM COLUMNS
+    // =========================================================================
+    function openAddCustomColModal(target) {
+      activeCustomColTarget = target;
+      document.getElementById('customColNameInput').value = '';
+      openModal('modalAddCustomCol');
+    }
+
+    function executeAddCustomColumn() {
+      const name = document.getElementById('customColNameInput').value.trim();
+      const type = document.getElementById('customColTypeInput').value;
+      if (!name) return;
+
+      const item = getActiveItem();
+      if (!item) return;
+
+      if (!item.custom_columns) item.custom_columns = [];
+      if (!item.custom_columns.includes(name)) {
+        item.custom_columns.push(name);
+      }
+
+      closeModal('modalAddCustomCol');
+      renderWorkspace();
+      triggerAutoSave();
+    }
+
+    // =========================================================================
+    // SMART EXCEL UPLOAD & INGESTION AUDIT
+    // =========================================================================
+    function handleExcelUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+
+          // Check if it's a Rate Card or BOM input
+          const firstSheet = workbook.SheetNames[0];
+          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { defval: '' });
+
+          if (rows.length === 0) {
+            alert('File Excel kosong atau format tidak dikenali.');
+            return;
+          }
+
+          // Rate card check
+          if (rows[0]['log_teak'] !== undefined || rows[0]['log_mindi'] !== undefined || rows[0]['processing'] !== undefined) {
+            // Process as rate update
+            updateRatesFromRow(rows[0]);
+            alert('Tarif dasar pabrik berhasil diperbarui dari file Excel!');
+            return;
+          }
+
+          // Process as BOM Input (Flat table or multi-tab)
+          processBOMUpload(file.name, workbook);
+
+        } catch (err) {
+          alert('Gagal memproses file Excel: ' + err.message);
+        } finally {
+          e.target.value = '';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function processBOMUpload(fileName, workbook) {
+      const firstSheet = workbook.SheetNames[0];
+      const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { defval: '' });
+
+      // Group rows by item_code
+      const grouped = {};
+      const customColsFound = new Set();
+      const warnings = [];
+
+      rows.forEach(r => {
+        const code = (r.ITEM_CODE || r.item_code || r['Item Code'] || '').toString().trim().toUpperCase();
+        if (!code) return;
+
+        if (!grouped[code]) {
+          grouped[code] = {
+            header: {
+              item_code: code,
+              item_name: r.ITEM_NAME || r.item_name || code,
+              project_qty: Number(r.PROJECT_QTY || r.qty || 1),
+              overall_l: Number(r.OVERALL_L || 0),
+              overall_w: Number(r.OVERALL_W || 0),
+              overall_h: Number(r.OVERALL_H || 0),
+              finish_recipe: r.FINISH_RECIPE || 'NC NATURAL'
+            },
+            solid: [],
+            panels: [],
+            hardware: [],
+            custom: [],
+            boxes: []
+          };
+        }
+
+        const cat = (r.CATEGORY || r.TIPE || r.type || 'SOLID').toString().trim().toUpperCase();
+        const partName = r.PART_NAME || r.COMPONENT || r.component || r.nama || 'Part';
+        const p = Number(r.LENGTH_MM || r.P || r.l || 0);
+        const l = Number(r.WIDTH_MM || r.L || r.w || 0);
+        const t = Number(r.THICKNESS_MM || r.T || r.t || 0);
+        const qty = Number(r.QTY || r.qty || 1);
+        const exposed = (r.EXPOSED || r.exposed || 'Y').toString().toUpperCase().startsWith('Y') ? 'Y' : 'N';
+        const unitPrice = r.UNIT_PRICE || r.unit_price ? Number(r.UNIT_PRICE || r.unit_price) : null;
+
+        // Detect custom columns
+        Object.keys(r).forEach(k => {
+          const standard = ['ITEM_CODE','ITEM_NAME','PROJECT_QTY','OVERALL_L','OVERALL_W','OVERALL_H','CATEGORY','ID_PART','PART_NAME','LENGTH_MM','WIDTH_MM','THICKNESS_MM','QTY','EXPOSED','CURVED','PANEL_TYPE','EXPOSED_FACES','UNIT_PRICE','NOTES','TIPE','COMPONENT'];
+          if (!standard.includes(k.toUpperCase()) && r[k] !== '') {
+            customColsFound.add(k);
+          }
+        });
+
+        if (cat.includes('PANEL') || cat.includes('PLY')) {
+          grouped[code].panels.push({
+            line_no: grouped[code].panels.length + 1,
+            panel_type: r.PANEL_TYPE || 'PLY-18-TDF',
+            component: partName,
+            l: p, w: l, t: t || 18, qty,
+            exposed_faces: 2
+          });
+        } else if (cat.includes('HARDWARE') || cat.includes('BESI') || cat.includes('BAUT')) {
+          if (unitPrice === null) warnings.push(`Hardware '${partName}' di item ${code} tidak memiliki unit price.`);
+          grouped[code].hardware.push({
+            line_no: grouped[code].hardware.length + 1,
+            item_code: r.ID_PART || 'I-000',
+            description: partName,
+            qty,
+            unit_price: unitPrice
+          });
+        } else if (cat.includes('CUSTOM') || cat.includes('JASA') || cat.includes('SUBKON')) {
+          grouped[code].custom.push({
+            line_no: grouped[code].custom.length + 1,
+            category: 'Subkon',
+            description: partName,
+            qty,
+            unit_price: unitPrice
+          });
+        } else {
+          // Solid wood
+          grouped[code].solid.push({
+            line_no: grouped[code].solid.length + 1,
+            material: (r.MATERIAL || r.SPECIES || 'TEAK').toString().toUpperCase(),
+            component: partName,
+            l: p, w: l, t: t, qty,
+            exposed,
+            curved: r.CURVED === 'Y' ? 'Y' : 'N'
+          });
+        }
+      });
+
+      pendingIngestedData = grouped;
+
+      // Populate audit modal
+      document.getElementById('auditFileName').textContent = fileName;
+      document.getElementById('auditItemCount').textContent = `${Object.keys(grouped).length} Item Terdeteksi`;
+      document.getElementById('auditRowCount').textContent = `${rows.length} Baris Komponen`;
+      document.getElementById('auditCustomCols').textContent = customColsFound.size > 0 ? Array.from(customColsFound).join(', ') : 'Tidak ada';
+
+      const warningBox = document.getElementById('auditWarningBox');
+      const warningList = document.getElementById('auditWarningList');
+      warningList.innerHTML = '';
+
+      if (warnings.length > 0) {
+        warningBox.classList.remove('hidden');
+        warnings.slice(0, 5).forEach(w => {
+          const li = document.createElement('li');
+          li.textContent = w;
+          warningList.appendChild(li);
+        });
+        if (warnings.length > 5) {
+          const li = document.createElement('li');
+          li.textContent = `...dan ${warnings.length - 5} part lainnya.`;
+          warningList.appendChild(li);
+        }
+      } else {
+        warningBox.classList.add('hidden');
+      }
+
+      openModal('modalIngestionAudit');
+    }
+
+    function applyIngestedData() {
+      if (!pendingIngestedData) return;
+
+      Object.keys(pendingIngestedData).forEach(code => {
+        const incoming = pendingIngestedData[code];
+        const existing = items.find(it => it.header.item_code.toUpperCase() === code);
+
+        if (existing) {
+          // Smart Merge: update dimensions, preserve manual user prices!
+          existing.header.overall_l = incoming.header.overall_l || existing.header.overall_l;
+          existing.header.overall_w = incoming.header.overall_w || existing.header.overall_w;
+          existing.header.overall_h = incoming.header.overall_h || existing.header.overall_h;
+          existing.solid = incoming.solid;
+          existing.panels = incoming.panels;
+
+          // Merge hardware preserving price
+          incoming.hardware.forEach(newH => {
+            const oldH = (existing.hardware || []).find(h => h.item_code === newH.item_code || h.description === newH.description);
+            if (oldH && oldH.unit_price && !newH.unit_price) {
+              newH.unit_price = oldH.unit_price;
+            }
+          });
+          existing.hardware = incoming.hardware;
+          existing.custom = incoming.custom;
+        } else {
+          // Brand new item
+          items.push({
+            id: 'item_' + (items.length + 1),
+            header: incoming.header,
+            solid: incoming.solid,
+            panels: incoming.panels,
+            hardware: incoming.hardware,
+            custom: incoming.custom,
+            boxes: incoming.boxes,
+            status: 'DRAFT',
+            version: 1,
+            target_margin: 30
+          });
+        }
+      });
+
+      closeModal('modalIngestionAudit');
+      renderItemList();
+      renderWorkspace();
+      triggerAutoSave();
+      alert('Data Excel berhasil diproses ke dalam sistem!');
+    }
+
+    // =========================================================================
+    // EXPORT TO EXCEL (DUAL: LIVE FORMULAS & STATIC VALUES)
+    // =========================================================================
+    function exportExcel(mode) {
+      const wb = XLSX.utils.book_new();
+
+      // 1. SUMMARY TAB
+      const summaryRows = [
+        ['PLV BOM COSTING SUMMARY', '', '', '', '', ''],
+        ['Generated:', new Date().toLocaleDateString('id-ID'), 'Mode:', mode.toUpperCase(), '', ''],
+        [],
+        ['NO', 'ITEM CODE', 'ITEM NAME', 'STATUS', 'QTY', 'HPP PABRIK (IDR)', 'MARGIN %', 'SELLING PRICE (IDR)', 'TOTAL PROJECT (IDR)']
+      ];
+
+      items.forEach((it, idx) => {
+        const res = BOMEngine.costItem(it, currentRates, norms);
+        const margin = it.target_margin !== undefined ? it.target_margin : 30;
+        const selling = res.unit_cost * (1 + margin / 100);
+        const proj = selling * (it.header.project_qty || 1);
+
+        summaryRows.push([
+          idx + 1,
+          it.header.item_code,
+          it.header.item_name,
+          it.status || 'DRAFT',
+          it.header.project_qty || 1,
+          mode === 'formulas' ? Math.round(res.unit_cost) : Math.round(res.unit_cost),
+          margin / 100,
+          Math.round(selling),
+          Math.round(proj)
+        ]);
+      });
+
+      const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'SUMMARY');
+
+      // 2. ONE TAB PER ITEM
+      items.forEach(it => {
+        const res = BOMEngine.costItem(it, currentRates, norms);
+        const safeSheetName = (it.header.item_code || 'ITEM').replace(/[\/?*\[\]:]/g, '_').slice(0, 31);
+        
+        const itemRows = [
+          ['ITEM CODE:', it.header.item_code, 'OVERALL L (mm):', it.header.overall_l],
+          ['ITEM NAME:', it.header.item_name, 'OVERALL W (mm):', it.header.overall_w],
+          ['PROJECT QTY:', it.header.project_qty || 1, 'OVERALL H (mm):', it.header.overall_h],
+          ['FINISH RECIPE:', it.header.finish_recipe || 'NC NATURAL', 'REVISION:', `Rev ${it.version || 1}`],
+          [],
+          ['--- SOLID WOOD COMPONENTS ---'],
+          ['No', 'Material', 'Component', 'L (mm)', 'W (mm)', 'T (mm)', 'Qty', 'Exposed', 'Curved', 'Tier', 'Subtotal (IDR)']
+        ];
+
+        (it.solid || []).forEach((l, sIdx) => {
+          const sRes = res.solid[sIdx] || {};
+          itemRows.push([
+            sIdx + 1,
+            l.material,
+            l.component,
+            l.l, l.w, l.t, l.qty,
+            l.exposed, l.curved,
+            sRes.auto_tier || 'B',
+            Math.round(sRes.cost || 0)
+          ]);
+        });
+
+        itemRows.push([]);
+        itemRows.push(['--- PANELS & SHEET GOODS ---']);
+        itemRows.push(['No', 'Panel Type', 'Component', 'L (mm)', 'W (mm)', 'T (mm)', 'Qty', 'Faces', 'Sheets', 'Subtotal (IDR)']);
+
+        (it.panels || []).forEach((p, pIdx) => {
+          const pRes = res.panels[pIdx] || {};
+          itemRows.push([
+            pIdx + 1,
+            p.panel_type,
+            p.component,
+            p.l, p.w, p.t, p.qty,
+            p.exposed_faces,
+            pRes.sheets_charged ? Number(pRes.sheets_charged).toFixed(2) : 0,
+            Math.round(pRes.cost || 0)
+          ]);
+        });
+
+        itemRows.push([]);
+        itemRows.push(['--- FINANCIAL ROLL-UP ---']);
+        itemRows.push(['Direct Cost:', Math.round(res.direct)]);
+        itemRows.push(['Overhead (12.99%):', Math.round(res.overhead)]);
+        itemRows.push(['HPP Pabrik (Unit):', Math.round(res.unit_cost)]);
+        itemRows.push(['Harga Jual Target:', Math.round(res.unit_cost * (1 + (it.target_margin || 30) / 100))]);
+
+        const wsItem = XLSX.utils.aoa_to_sheet(itemRows);
+        XLSX.utils.book_append_sheet(wb, wsItem, safeSheetName);
+      });
+
+      XLSX.writeFile(wb, `PLV_BOM_Costing_${mode.toUpperCase()}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    }
+
+    function downloadTemplate(type) {
+      const link = document.createElement('a');
+      if (type === 'bom') {
+        link.href = 'templates/PLV_BOM_Flat_Template.xlsx';
+        link.download = 'PLV_BOM_Flat_Template.xlsx';
+      } else {
+        link.href = 'templates/PLV_Rate_Card_Template.xlsx';
+        link.download = 'PLV_Rate_Card_Template.xlsx';
+      }
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // =========================================================================
+    // RATE CARD COCKPIT: BENTO MATRIX & PER-TABLE SEARCH & CRUD
+    // =========================================================================
+    let customRates = [];
+
+    function renderRatesCockpit() {
+      // 1. Base input card values
+      document.getElementById('inputLogTeak').value = rateInputs.log_teak || 6000000;
+      document.getElementById('inputLogMindi').value = rateInputs.log_mindi || 3000000;
+      document.getElementById('dispLabCarp').textContent = formatIDR(currentRates.LAB_CARP);
+
+      document.getElementById('inputPly18').value = panelInputs.ply[18] || 295000;
+      const sheetArea = (panelInputs.sheet_L || 2.44) * (panelInputs.sheet_W || 1.22);
+      const gluePerFace = (panelInputs.glue_tape || 10424) * sheetArea;
+      const teakAdd = (panelInputs.ven_teak || 110000) * (panelInputs.ven_len || 2.5) + gluePerFace + (panelInputs.ven_labour || 57142.86);
+      const mindiAdd = (panelInputs.ven_mindi || 20000) * (panelInputs.ven_len || 2.5) + gluePerFace + (panelInputs.ven_labour || 57142.86);
+      document.getElementById('dispTeakAdd').textContent = formatIDR(teakAdd);
+      document.getElementById('dispMindiAdd').textContent = formatIDR(mindiAdd);
+
+      document.getElementById('inputPaintTotal').value = rateInputs.paint_total || 84137326;
+      document.getElementById('inputFinPool').value = rateInputs.fin_pool || 192243271;
+      document.getElementById('dispFinAllRate').textContent = formatIDR(currentRates.FIN_ALL) + ' / m²';
+
+      document.getElementById('inputCartonM2').value = rateInputs.carton_m2 || 42000;
+      document.getElementById('inputPackLab').value = rateInputs.pack_lab || 100000;
+      const ohPct = ((rateInputs.oh_pool || 308560109) / (rateInputs.stmv_direct || 2374841837) * 100).toFixed(5);
+      document.getElementById('dispOhRate').textContent = `${ohPct}%`;
+
+      // 2. Render individual tables
+      renderTimberTable();
+      renderPanelTable();
+      renderFinishingTable();
+      renderOverheadTable();
+    }
+
+    // --- BOX 1: TIMBER TABLE & FILTER ---
+    function getTimberData() {
+      const logTeak = rateInputs.log_teak || 6000000;
+      const logMindi = rateInputs.log_mindi || 3000000;
+      const proc = rateInputs.processing || 598978;
+      const labCarp = currentRates.LAB_CARP || 7467983;
+
+      const baseList = [
+        { code: 'TEAK_A', name: 'Jati Grade A (Pjg >= 1000mm)', yield: 3.50, logBase: logTeak + proc, labor: labCarp, rate: currentRates.TEAK_A },
+        { code: 'TEAK_AC', name: 'Jati Grade A-CURVED (Melengkung)', yield: 4.60, logBase: logTeak + proc, labor: labCarp, rate: currentRates.TEAK_AC },
+        { code: 'TEAK_B', name: 'Jati Grade B (Narrow / <= 40x40)', yield: 2.50, logBase: logTeak + proc, labor: labCarp, rate: currentRates.TEAK_B },
+        { code: 'TEAK_C', name: 'Jati Grade C (Non-Exposed / Rangka)', yield: 2.00, logBase: logTeak + proc, labor: labCarp, rate: currentRates.TEAK_C },
+        { code: 'TEAK_D', name: 'Jati Grade D (Short < 300mm)', yield: 1.50, logBase: logTeak + proc, labor: labCarp, rate: currentRates.TEAK_D },
+        { code: 'TEAK_BUBUT', name: 'Jati Bubut Luar (Q-17 Ex-Labor)', yield: 3.50, logBase: logTeak + proc, labor: 0, rate: (logTeak + proc) * 3.50 },
+        { code: 'MINDI_A', name: 'Mindi Grade A (Pjg >= 1000mm)', yield: 3.50, logBase: logMindi + proc, labor: labCarp, rate: currentRates.MINDI_A },
+        { code: 'MINDI_AC', name: 'Mindi Grade A-CURVED (Melengkung)', yield: 4.60, logBase: logMindi + proc, labor: labCarp, rate: currentRates.MINDI_AC },
+        { code: 'MINDI_B', name: 'Mindi Grade B (Standar)', yield: 2.50, logBase: logMindi + proc, labor: labCarp, rate: currentRates.MINDI_B },
+        { code: 'MINDI_C', name: 'Mindi Grade C (Non-Exposed)', yield: 2.00, logBase: logMindi + proc, labor: labCarp, rate: currentRates.MINDI_C },
+        { code: 'MINDI_D', name: 'Mindi Grade D (Short)', yield: 1.50, logBase: logMindi + proc, labor: labCarp, rate: currentRates.MINDI_D },
+        { code: 'MERANTI', name: 'Meranti Sawn Timber', yield: 1.50, logBase: rateInputs.meranti_sawn || 8500000, labor: labCarp, rate: currentRates.MERANTI },
+        { code: 'FASTENERS', name: 'Pool Fasteners & Lem', yield: 1.00, logBase: 0, labor: 0, rate: currentRates.FASTENERS }
+      ];
+
+      // Add user custom timber
+      customRates.filter(cr => cr.category === 'Kayu Solid').forEach(cr => {
+        baseList.push({
+          code: cr.code,
+          name: cr.name,
+          yield: cr.yield || 1.0,
+          logBase: cr.logBase || cr.value,
+          labor: cr.labor || 0,
+          rate: cr.value,
+          isCustom: true
+        });
+      });
+
+      return baseList;
+    }
+
+    function renderTimberTable() {
+      const q = (document.getElementById('searchTimberInput')?.value || '').toLowerCase();
+      const tbody = document.getElementById('timberTableBody');
+      tbody.innerHTML = '';
+
+      const data = getTimberData().filter(d => d.code.toLowerCase().includes(q) || d.name.toLowerCase().includes(q));
+      document.getElementById('timberCountLabel').textContent = `${data.length} items`;
+
+      data.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-surface-elevated/40 transition-colors';
+        tr.innerHTML = `
+          <td class="py-2 px-3">
+            <div class="font-sans font-medium text-white text-xs">${d.name}</div>
+            <div class="font-mono text-[10px] text-text-muted">${d.code}</div>
+          </td>
+          <td class="py-2 px-3 text-center text-accent-green font-semibold">${d.yield > 0 ? d.yield.toFixed(2) + 'x' : '-'}</td>
+          <td class="py-2 px-3 text-right text-text-subtle">${d.logBase > 0 ? formatIDR(d.logBase) : '-'}</td>
+          <td class="py-2 px-3 text-right text-text-subtle">${d.labor > 0 ? formatIDR(d.labor) : '-'}</td>
+          <td class="py-2 px-3 text-right font-bold text-accent-green text-xs">${formatIDR(d.rate)}</td>
+          <td class="py-2 px-2 text-center">
+            ${d.isCustom ? `<button onclick="deleteCustomRate('${d.code}')" class="text-text-muted hover:text-accent-rose"><span class="material-symbols-outlined text-[15px]">delete</span></button>` : `<button onclick="openEditParamModal('${d.code}', '${d.name}', ${d.rate})" class="text-text-muted hover:text-white"><span class="material-symbols-outlined text-[15px]">edit</span></button>`}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterTimberTable() {
+      renderTimberTable();
+    }
+
+    // --- BOX 2: PANEL TABLE & FILTER ---
+    function getPanelData() {
+      const list = [];
+      const thicknesses = [3, 6, 9, 12, 15, 18, 24];
+      const faces = [
+        { suffix: 'RAW', name: 'Raw Plywood (Mentah)' },
+        { suffix: 'MSF', name: 'Mindi Single Face (1 Muka)' },
+        { suffix: 'MDF', name: 'Mindi Double Face (2 Muka)' },
+        { suffix: 'TSF', name: 'Teak Single Face (1 Muka)' },
+        { suffix: 'TDF', name: 'Teak Double Face (2 Muka)' }
+      ];
+
+      const sheetArea = 2.44 * 1.22;
+
+      thicknesses.forEach(t => {
+        faces.forEach(f => {
+          const code = `PLY-${t}-${f.suffix}`;
+          const sheetPrice = currentRates[code] || 0;
+          const netM2 = sheetPrice / sheetArea;
+          list.push({
+            code,
+            name: `Plywood ${t}mm ${f.name}`,
+            thickness: `${t} mm`,
+            sheetPrice,
+            netM2
+          });
+        });
+      });
+
+      // Custom panels
+      customRates.filter(cr => cr.category === 'Panel & Sheet').forEach(cr => {
+        list.push({
+          code: cr.code,
+          name: cr.name,
+          thickness: cr.thickness || 'Custom',
+          sheetPrice: cr.value,
+          netM2: cr.value / sheetArea,
+          isCustom: true
+        });
+      });
+
+      return list;
+    }
+
+    function renderPanelTable() {
+      const q = (document.getElementById('searchPanelInput')?.value || '').toLowerCase();
+      const tbody = document.getElementById('panelTableBody');
+      tbody.innerHTML = '';
+
+      const data = getPanelData().filter(d => d.code.toLowerCase().includes(q) || d.name.toLowerCase().includes(q));
+      document.getElementById('panelCountLabel').textContent = `${data.length} items`;
+
+      data.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-surface-elevated/40 transition-colors';
+        tr.innerHTML = `
+          <td class="py-2 px-3">
+            <span class="font-mono text-accent-blue font-semibold text-xs">${d.code}</span>
+          </td>
+          <td class="py-2 px-3 font-sans font-medium text-white text-xs">${d.name}</td>
+          <td class="py-2 px-3 text-center text-text-subtle">${d.thickness}</td>
+          <td class="py-2 px-3 text-right">
+            <div class="inline-flex items-center bg-surface-elevated border border-border-subtle rounded px-2 py-0.5 focus-within:border-accent-blue">
+              <span class="text-[10px] text-text-muted mr-1 font-mono">Rp</span>
+              <input type="number" step="1000" class="w-24 bg-transparent font-mono text-xs text-white text-right focus:outline-none" value="${Math.round(d.sheetPrice)}" onchange="updateCustomSheetPrice('${d.code}', Number(this.value))" />
+            </div>
+          </td>
+          <td class="py-2 px-3 text-right font-medium text-white">${formatIDR(d.netM2)}</td>
+          <td class="py-2 px-2 text-center">
+            ${d.isCustom ? `<button onclick="deleteCustomRate('${d.code}')" class="text-text-muted hover:text-accent-rose"><span class="material-symbols-outlined text-[15px]">delete</span></button>` : `<button onclick="openEditParamModal('${d.code}', '${d.name}', ${d.sheetPrice})" class="text-text-muted hover:text-white"><span class="material-symbols-outlined text-[15px]">edit</span></button>`}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterPanelTable() {
+      renderPanelTable();
+    }
+
+    function updateCustomSheetPrice(code, newPrice) {
+      if (currentRates[code] !== undefined) {
+        currentRates[code] = newPrice;
+        const matchRaw = code.match(/^PLY-(\d+)-RAW$/);
+        if (matchRaw) {
+          const t = Number(matchRaw[1]);
+          panelInputs.ply[t] = newPrice;
+          recalculateDerivedRates();
+        } else {
+          renderPanelTable();
+          renderWorkspace();
+          triggerAutoSave();
+        }
+      }
+    }
+
+    // --- BOX 3: FINISHING TABLE & FILTER ---
+    function getFinishingData() {
+      const finM2 = rateInputs.fin_m2 || 2166;
+      const paintTotal = rateInputs.paint_total || 84137326;
+      const abrasiveTotal = rateInputs.abrasive_total || 27713000;
+      const finPool = rateInputs.fin_pool || 192243271;
+      const sandPool = (rateInputs.sand_pool || 131550191) * (rateInputs.sand_keep || 0.65);
+      const totalAll = currentRates.FIN_ALL || 179871;
+
+      const list = [
+        { code: 'FIN_MAT', name: 'Chemical Cat & Thinner (Paint)', pool: paintTotal, rate: currentRates.FIN_MAT, pct: (currentRates.FIN_MAT / totalAll * 100).toFixed(1) },
+        { code: 'SAND_MAT', name: 'Amplas & Abrasives (Sandpaper)', pool: abrasiveTotal, rate: currentRates.SAND_MAT, pct: (currentRates.SAND_MAT / totalAll * 100).toFixed(1) },
+        { code: 'SAND_LAB', name: 'Upah Tenaga Kerja Gosok (Sanding)', pool: sandPool, rate: currentRates.SAND_LAB, pct: (currentRates.SAND_LAB / totalAll * 100).toFixed(1) },
+        { code: 'FIN_LAB', name: 'Upah Tenaga Semprot Finishing (Spray)', pool: finPool, rate: currentRates.FIN_LAB, pct: (currentRates.FIN_LAB / totalAll * 100).toFixed(1) },
+        { code: 'FIN_ALL', name: 'Total Flat Rate Terpadu (All 6 Faces)', pool: paintTotal + abrasiveTotal + finPool + sandPool, rate: totalAll, pct: '100.0' }
+      ];
+
+      customRates.filter(cr => cr.category === 'Finishing').forEach(cr => {
+        list.push({
+          code: cr.code,
+          name: cr.name,
+          pool: cr.pool || 0,
+          rate: cr.value,
+          pct: ((cr.value / totalAll) * 100).toFixed(1),
+          isCustom: true
+        });
+      });
+
+      return list;
+    }
+
+    function renderFinishingTable() {
+      const q = (document.getElementById('searchFinishingInput')?.value || '').toLowerCase();
+      const tbody = document.getElementById('finishingTableBody');
+      tbody.innerHTML = '';
+
+      const data = getFinishingData().filter(d => d.code.toLowerCase().includes(q) || d.name.toLowerCase().includes(q));
+      document.getElementById('finishingCountLabel').textContent = `${data.length} items`;
+
+      data.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-surface-elevated/40 transition-colors';
+        tr.innerHTML = `
+          <td class="py-2 px-3 font-mono text-accent-amber font-semibold text-xs">${d.code}</td>
+          <td class="py-2 px-3 font-sans font-medium text-white text-xs">${d.name}</td>
+          <td class="py-2 px-3 text-right text-text-subtle">${d.pool > 0 ? formatIDR(d.pool) : '-'}</td>
+          <td class="py-2 px-3 text-right font-bold text-accent-amber text-xs">${formatIDR(d.rate)} / m²</td>
+          <td class="py-2 px-3 text-right text-text-muted">${d.pct}%</td>
+          <td class="py-2 px-2 text-center">
+            ${d.isCustom ? `<button onclick="deleteCustomRate('${d.code}')" class="text-text-muted hover:text-accent-rose"><span class="material-symbols-outlined text-[15px]">delete</span></button>` : `<button onclick="openEditParamModal('${d.code}', '${d.name}', ${d.rate})" class="text-text-muted hover:text-white"><span class="material-symbols-outlined text-[15px]">edit</span></button>`}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterFinishingTable() {
+      renderFinishingTable();
+    }
+
+    // --- BOX 4: OVERHEAD TABLE & FILTER ---
+    function getOverheadData() {
+      const list = [
+        { code: 'CARTON_M2', name: 'Karton Board Lembaran Corrugated', value: rateInputs.carton_m2 || 42000, unit: 'IDR/m²', alloc: 'Direct Packing' },
+        { code: 'PACK_LAB', name: 'Upah Tenaga Kerja Packing', value: rateInputs.pack_lab || 100000, unit: 'IDR/m³', alloc: 'Direct Packing' },
+        { code: 'GRP_A', name: 'Karton Group A Flat Rate Minimal', value: rateInputs.grp_a || 24000, unit: 'IDR/unit', alloc: 'Direct Packing' },
+        { code: 'MISC_PCT', name: 'Miscellaneous Markup Cadangan', value: (rateInputs.misc_pct || 0.05) * 100, unit: '%', alloc: 'Direct Cost' },
+        { code: 'OH_POOL', name: 'Pool Overhead Payroll, Listrik, & Depr', value: rateInputs.oh_pool || 308560109, unit: 'IDR Pool', alloc: 'Overhead' },
+        { code: 'STMV_DIRECT', name: 'Direct Cost Baseline Proyek STMV', value: rateInputs.stmv_direct || 2374841837, unit: 'IDR Baseline', alloc: 'Overhead Denom' },
+        { code: 'OH_PCT', name: 'Overhead Pabrik Rate Multiplier', value: ((rateInputs.oh_pool || 308560109) / (rateInputs.stmv_direct || 2374841837) * 100), unit: '%', alloc: 'Overhead Margin' }
+      ];
+
+      customRates.filter(cr => cr.category === 'Overhead').forEach(cr => {
+        list.push({
+          code: cr.code,
+          name: cr.name,
+          value: cr.value,
+          unit: cr.unit || 'IDR',
+          alloc: cr.allocation || 'Direct',
+          isCustom: true
+        });
+      });
+
+      return list;
+    }
+
+    function renderOverheadTable() {
+      const q = (document.getElementById('searchOverheadInput')?.value || '').toLowerCase();
+      const tbody = document.getElementById('overheadTableBody');
+      tbody.innerHTML = '';
+
+      const data = getOverheadData().filter(d => d.code.toLowerCase().includes(q) || d.name.toLowerCase().includes(q));
+      document.getElementById('overheadCountLabel').textContent = `${data.length} items`;
+
+      data.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-surface-elevated/40 transition-colors';
+        const isPercent = d.unit === '%';
+        tr.innerHTML = `
+          <td class="py-2 px-3 font-mono text-yellow-500 font-semibold text-xs">${d.code}</td>
+          <td class="py-2 px-3 font-sans font-medium text-white text-xs">${d.name}</td>
+          <td class="py-2 px-3 text-right font-bold text-white text-xs">${isPercent ? Number(d.value).toFixed(5) + '%' : formatIDR(d.value)}</td>
+          <td class="py-2 px-3 text-center text-text-subtle font-mono text-[11px]">${d.unit}</td>
+          <td class="py-2 px-3 text-right text-text-muted text-[11px]">${d.alloc}</td>
+          <td class="py-2 px-2 text-center">
+            ${d.isCustom ? `<button onclick="deleteCustomRate('${d.code}')" class="text-text-muted hover:text-accent-rose"><span class="material-symbols-outlined text-[15px]">delete</span></button>` : `<button onclick="openEditParamModal('${d.code}', '${d.name}', ${d.value})" class="text-text-muted hover:text-white"><span class="material-symbols-outlined text-[15px]">edit</span></button>`}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterOverheadTable() {
+      renderOverheadTable();
+    }
+
+    // =========================================================================
+    // CRUD: TAMBAH & EDIT PARAMETER BARU
+    // =========================================================================
+    let editingParamCode = null;
+
+    function openAddParamModal(category = 'Kayu Solid') {
+      editingParamCode = null;
+      document.getElementById('modalParamTitle').textContent = '+ Tambah Parameter Tarif';
+      document.getElementById('paramCategoryInput').value = category;
+      document.getElementById('paramCodeInput').value = '';
+      document.getElementById('paramNameInput').value = '';
+      document.getElementById('paramUnitInput').value = category === 'Kayu Solid' ? 'IDR/m³' : category === 'Panel & Sheet' ? 'IDR/lbr' : 'IDR';
+      document.getElementById('paramValueInput').value = '';
+      document.getElementById('paramCodeInput').disabled = false;
+      openModal('modalAddParam');
+    }
+
+    function openEditParamModal(code, name, value) {
+      editingParamCode = code;
+      document.getElementById('modalParamTitle').textContent = 'Edit Parameter: ' + code;
+      document.getElementById('paramCodeInput').value = code;
+      document.getElementById('paramCodeInput').disabled = true;
+      document.getElementById('paramNameInput').value = name;
+      document.getElementById('paramValueInput').value = value;
+      openModal('modalAddParam');
+    }
+
+    function saveCustomRateParam() {
+      const category = document.getElementById('paramCategoryInput').value;
+      const code = document.getElementById('paramCodeInput').value.trim().toUpperCase();
+      const name = document.getElementById('paramNameInput').value.trim();
+      const unit = document.getElementById('paramUnitInput').value.trim();
+      const value = Number(document.getElementById('paramValueInput').value);
+      const alloc = document.getElementById('paramAllocationInput').value;
+
+      if (!code || isNaN(value)) {
+        alert('Mohon isi kode parameter dan nilai angka dengan benar.');
+        return;
+      }
+
+      if (editingParamCode) {
+        if (currentRates[editingParamCode] !== undefined) {
+          currentRates[editingParamCode] = value;
+        }
+        const customIdx = customRates.findIndex(cr => cr.code === editingParamCode);
+        if (customIdx >= 0) {
+          customRates[customIdx].name = name;
+          customRates[customIdx].value = value;
+        }
+      } else {
+        customRates.push({
+          category,
+          code,
+          name: name || code,
+          unit,
+          value,
+          allocation: alloc
+        });
+        currentRates[code] = value;
+      }
+
+      closeModal('modalAddParam');
+      recalculateDerivedRates();
+      renderWorkspace();
+      triggerAutoSave();
+      alert(`Parameter ${code} berhasil disimpan!`);
+    }
+
+    function deleteCustomRate(code) {
+      if (confirm(`Hapus parameter custom ${code}?`)) {
+        customRates = customRates.filter(cr => cr.code !== code);
+        delete currentRates[code];
+        recalculateDerivedRates();
+        renderWorkspace();
+        triggerAutoSave();
+      }
+    }
+
+    function resetRatesToDefault() {
+      rateInputs = JSON.parse(rates_json_str);
+      panelInputs = JSON.parse(panel_rates_json_str);
+      norms = JSON.parse(norms_json_str);
+      customRates = [];
+      recalculateDerivedRates();
+      renderWorkspace();
+      triggerAutoSave();
+      alert('Tarif dikembalikan ke standar keputusan owner 2 Okt (Jati Rp 6M, Mindi Rp 3M, Fin 6-Muka).');
+    }
+
+    // =========================================================================
+    // BOOTSTRAP APP
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      loadFromLocalStorage();
+      recalculateDerivedRates();
+      renderItemList();
+      renderWorkspace();
+    });
+  </script>
+</body>
+</html>

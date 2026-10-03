@@ -1,0 +1,20 @@
+{
+  "_source": "docs/SPEC-costing-system.md C4.6, two-item stack test 30 Sep 2026. Old BOM source rows 650-660 of REVISI BOM 21 MEI 26.",
+  "header": {
+    "item_code": "ID-OV-506",
+    "item_name": "A/C COVER @OVERWATER (KECIL)",
+    "project_qty": 109,
+    "finish_recipe": "OTHER",
+    "flatpack": "N",
+    "overall_l": 1165,
+    "overall_w": 291,
+    "overall_h": 407
+  },
+  "boxes": [],
+  "solid": [
+    { "line_no": 1, "material": "TEAK", "component": "KAYU SAMPING", "l": 375, "w": 275, "t": 20, "qty": 2, "exposed": "Y", "curved": "N", "note": "old BOM: BELAH 25; 275 mm wide board" },
+    { "line_no": 2, "material": "TEAK", "component": "SLAT", "l": 1165, "w": 22, "t": 16, "qty": 17, "exposed": "Y", "curved": "N" }
+  ],
+  "panels": [],
+  "hardware": []
+}

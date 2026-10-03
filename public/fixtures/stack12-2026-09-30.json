@@ -1,0 +1,1634 @@
+[
+ {
+  "tab": "AA-02",
+  "input": {
+   "header": {
+    "item_code": "AA-02",
+    "item_name": "ROUND MIRROR @ BEDROOM",
+    "project_qty": 121.0,
+    "finish_recipe": "NC NATURAL",
+    "flatpack": "N",
+    "overall_l": 800.0,
+    "overall_w": 800.0,
+    "overall_h": 45.0
+   },
+   "boxes": [],
+   "solid": [
+    {
+     "line_no": 1,
+     "material": "MINDI",
+     "component": "FRAME",
+     "l": 420.0,
+     "w": 85.0,
+     "t": 45.0,
+     "qty": 6.0,
+     "exposed": "Y",
+     "curved": "Y"
+    }
+   ],
+   "panels": [
+    {
+     "line_no": 1,
+     "panel_type": "PLY-12-RAW",
+     "component": "PLYWOOD 12 MM",
+     "exposed_faces": 0.0,
+     "sheets_manual": 0.5
+    }
+   ],
+   "hardware": [
+    {
+     "line_no": 1,
+     "item_code": null,
+     "description": "HARDWARE GANTUNGAN",
+     "qty": 2.0,
+     "uom": "pcs",
+     "unit_price": 6000.0
+    },
+    {
+     "line_no": 2,
+     "item_code": null,
+     "description": "KACA 5 MM",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 147200.0
+    }
+   ]
+  },
+  "ref": {
+   "summary": {
+    "Solid wood m\u00b3": 0.009639,
+    "Panel sheets": 0.5,
+    "Finishing m\u00b2 (exposed)": 0.2142,
+    "Cartons": 1.0,
+    "Carton m\u00b3": 0.059976,
+    "TIMBER": 235994.35,
+    "FASTENERS": 16874.17076,
+    "PANELS": 107500.0,
+    "FINISHING MATERIALS": 8320.505646,
+    "SANDING MATERIALS": 2740.593075,
+    "SANDING LABOUR": 8456.017125,
+    "FINISHING LABOUR": 19011.31517,
+    "HARDWARE": 159200.0,
+    "PACKING": 77263.2,
+    "DIRECT COST": 635360.1517,
+    "MISC 5%": 31768.00759,
+    "OVERHEAD": 86679.09347,
+    "UNIT COST IDR": 753807.2528,
+    "Carton board m\u00b2 (6 sides)": 1.6968,
+    "PROJECT QTY \u00d7 UNIT COST": 91210677.59,
+    "Exposed m\u00b2, all faces (reference)": 0.7011
+   },
+   "solid": [
+    {
+     "tier": "A-CURVED",
+     "rate": 24483281.46,
+     "cost": 235994.35
+    }
+   ],
+   "panels": [
+    {
+     "sheets": 0.5,
+     "rate": 215000.0,
+     "cost": 107500.0
+    }
+   ]
+  }
+ },
+ {
+  "tab": "AA-03AB",
+  "input": {
+   "header": {
+    "item_code": "AA-03A&B",
+    "item_name": "ROUND MIRROR @ BATHROOM (A = OWV, B = BV)",
+    "project_qty": 122.0,
+    "finish_recipe": "NC NATURAL",
+    "flatpack": "N",
+    "overall_l": 1400.0,
+    "overall_w": 1400.0,
+    "overall_h": 45.0
+   },
+   "boxes": [],
+   "solid": [
+    {
+     "line_no": 1,
+     "material": "MINDI",
+     "component": "FRAME",
+     "l": 550.0,
+     "w": 90.0,
+     "t": 45.0,
+     "qty": 8.0,
+     "exposed": "Y",
+     "curved": "Y"
+    }
+   ],
+   "panels": [
+    {
+     "line_no": 1,
+     "panel_type": "PLY-6-RAW",
+     "component": "PLYWOOD 6 MM LAMINASI",
+     "exposed_faces": 0.0,
+     "sheets_manual": 2.0
+    }
+   ],
+   "hardware": [
+    {
+     "line_no": 1,
+     "item_code": null,
+     "description": "HARDWARE GANTUNGAN",
+     "qty": 2.0,
+     "uom": "pcs",
+     "unit_price": 6000.0
+    },
+    {
+     "line_no": 2,
+     "item_code": null,
+     "description": "KACA 5 MM",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 450800.0
+    }
+   ]
+  },
+  "ref": {
+   "summary": {
+    "Solid wood m\u00b3": 0.01782,
+    "Panel sheets": 2.0,
+    "Finishing m\u00b2 (exposed)": 0.396,
+    "Cartons": 1.0,
+    "Carton m\u00b3": 0.176256,
+    "TIMBER": 436292.0756,
+    "FASTENERS": 31195.94595,
+    "PANELS": 230000.0,
+    "FINISHING MATERIALS": 15382.44741,
+    "SANDING MATERIALS": 5066.642659,
+    "SANDING LABOUR": 15632.97284,
+    "FINISHING LABOUR": 35146.96921,
+    "HARDWARE": 462800.0,
+    "PACKING": 212371.2,
+    "DIRECT COST": 1443888.254,
+    "MISC 5%": 72194.41268,
+    "OVERHEAD": 196982.6476,
+    "UNIT COST IDR": 1713065.314,
+    "Carton board m\u00b2 (6 sides)": 4.6368,
+    "PROJECT QTY \u00d7 UNIT COST": 208993968.3,
+    "Exposed m\u00b2, all faces (reference)": 1.2528
+   },
+   "solid": [
+    {
+     "tier": "A-CURVED",
+     "rate": 24483281.46,
+     "cost": 436292.0756
+    }
+   ],
+   "panels": [
+    {
+     "sheets": 2.0,
+     "rate": 115000.0,
+     "cost": 230000.0
+    }
+   ]
+  }
+ },
+ {
+  "tab": "AA-04A",
+  "input": {
+   "header": {
+    "item_code": "AA-04A",
+    "item_name": "VANITY MIRROR @ BEACH VILLA",
+    "project_qty": 60.0,
+    "finish_recipe": "NC NATURAL",
+    "flatpack": "N",
+    "overall_l": 1150.0,
+    "overall_w": 750.0,
+    "overall_h": 70.0
+   },
+   "boxes": [],
+   "solid": [
+    {
+     "line_no": 1,
+     "material": "MINDI",
+     "component": "FRAME PANJANG",
+     "l": 1090.0,
+     "w": 70.0,
+     "t": 55.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 2,
+     "material": "MINDI",
+     "component": "FRAME PENDEK",
+     "l": 750.0,
+     "w": 70.0,
+     "t": 55.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 3,
+     "material": "MINDI",
+     "component": "RUMAH LAMPU",
+     "l": 145.0,
+     "w": 145.0,
+     "t": 70.0,
+     "qty": 1.0,
+     "exposed": "Y",
+     "curved": "Y"
+    },
+    {
+     "line_no": 4,
+     "material": "MINDI",
+     "component": "KAYU SUDUT",
+     "l": 180.0,
+     "w": 180.0,
+     "t": 70.0,
+     "qty": 4.0,
+     "exposed": "Y",
+     "curved": "Y"
+    }
+   ],
+   "panels": [
+    {
+     "line_no": 1,
+     "panel_type": "PLY-12-RAW",
+     "component": "PLYWOOD 12 MM PALM",
+     "exposed_faces": 0.0,
+     "sheets_manual": 0.8
+    }
+   ],
+   "hardware": [
+    {
+     "line_no": 1,
+     "item_code": null,
+     "description": "HARDWARE GANTUNGAN",
+     "qty": 2.0,
+     "uom": "pcs",
+     "unit_price": 6000.0
+    },
+    {
+     "line_no": 2,
+     "item_code": null,
+     "description": "KACA 5 MM + BLASTING",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 251800.0
+    },
+    {
+     "line_no": 3,
+     "item_code": null,
+     "description": "LAMPU LED",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 55000.0
+    },
+    {
+     "line_no": 4,
+     "item_code": null,
+     "description": "POWER SUPPLY",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 116000.0
+    },
+    {
+     "line_no": 5,
+     "item_code": null,
+     "description": "SWITCH",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 50000.0
+    },
+    {
+     "line_no": 6,
+     "item_code": null,
+     "description": "PLASTIK FILM",
+     "qty": 2.0,
+     "uom": "pcs",
+     "unit_price": 8000.0
+    },
+    {
+     "line_no": 7,
+     "item_code": null,
+     "description": "KABEL",
+     "qty": 5.0,
+     "uom": "pcs",
+     "unit_price": 8000.0
+    }
+   ]
+  },
+  "ref": {
+   "summary": {
+    "Solid wood m\u00b3": 0.02471175,
+    "Panel sheets": 0.8,
+    "Finishing m\u00b2 (exposed)": 0.408225,
+    "Cartons": 1.0,
+    "Carton m\u00b3": 0.103411,
+    "TIMBER": 526015.3003,
+    "FASTENERS": 43260.74171,
+    "PANELS": 172000.0,
+    "FINISHING MATERIALS": 15857.32221,
+    "SANDING MATERIALS": 5223.05606,
+    "SANDING LABOUR": 16115.58166,
+    "FINISHING LABOUR": 36231.99876,
+    "HARDWARE": 540800.0,
+    "PACKING": 107604.7,
+    "DIRECT COST": 1463108.701,
+    "MISC 5%": 73155.43503,
+    "OVERHEAD": 199604.7997,
+    "UNIT COST IDR": 1735868.935,
+    "Carton board m\u00b2 (6 sides)": 2.3158,
+    "PROJECT QTY \u00d7 UNIT COST": 104152136.1,
+    "Exposed m\u00b2, all faces (reference)": 1.49425
+   },
+   "solid": [
+    {
+     "tier": "A",
+     "rate": 20414405.66,
+     "cost": 171338.1067
+    },
+    {
+     "tier": "B",
+     "rate": 16715427.66,
+     "cost": 96531.59472
+    },
+    {
+     "tier": "A-CURVED",
+     "rate": 24483281.46,
+     "cost": 36033.26948
+    },
+    {
+     "tier": "A-CURVED",
+     "rate": 24483281.46,
+     "cost": 222112.3294
+    }
+   ],
+   "panels": [
+    {
+     "sheets": 0.8,
+     "rate": 215000.0,
+     "cost": 172000.0
+    }
+   ]
+  }
+ },
+ {
+  "tab": "AA-04B",
+  "input": {
+   "header": {
+    "item_code": "AA-04B",
+    "item_name": "VANITY MIRROR @ OVERWATER",
+    "project_qty": 91.0,
+    "finish_recipe": "NC NATURAL",
+    "flatpack": "N",
+    "overall_l": 1990.0,
+    "overall_w": 750.0,
+    "overall_h": 70.0
+   },
+   "boxes": [],
+   "solid": [
+    {
+     "line_no": 1,
+     "material": "MINDI",
+     "component": "FRAME PANJANG",
+     "l": 1990.0,
+     "w": 70.0,
+     "t": 55.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 2,
+     "material": "MINDI",
+     "component": "FRAME PENDEK",
+     "l": 750.0,
+     "w": 70.0,
+     "t": 55.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 3,
+     "material": "MINDI",
+     "component": "RUMAH LAMPU",
+     "l": 245.0,
+     "w": 245.0,
+     "t": 70.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "Y"
+    },
+    {
+     "line_no": 4,
+     "material": "MINDI",
+     "component": "KAYU SUDUT",
+     "l": 180.0,
+     "w": 180.0,
+     "t": 70.0,
+     "qty": 4.0,
+     "exposed": "Y",
+     "curved": "Y"
+    }
+   ],
+   "panels": [
+    {
+     "line_no": 1,
+     "panel_type": "PLY-12-RAW",
+     "component": "PLYWOOD 12 MM PALM",
+     "l": 1990.0,
+     "w": 750.0,
+     "t": 12.0,
+     "qty": 1.0,
+     "exposed_faces": 0.0
+    }
+   ],
+   "hardware": [
+    {
+     "line_no": 1,
+     "item_code": null,
+     "description": "HARDWARE GANTUNGAN",
+     "qty": 2.0,
+     "uom": "pcs",
+     "unit_price": 6000.0
+    },
+    {
+     "line_no": 2,
+     "item_code": null,
+     "description": "KACA 5 MM + BLASTING",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 420200.0
+    },
+    {
+     "line_no": 3,
+     "item_code": null,
+     "description": "LAMPU LED",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 55000.0
+    },
+    {
+     "line_no": 4,
+     "item_code": null,
+     "description": "POWER SUPPLY",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 116000.0
+    },
+    {
+     "line_no": 5,
+     "item_code": null,
+     "description": "SWITCH",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 50000.0
+    },
+    {
+     "line_no": 6,
+     "item_code": null,
+     "description": "PLASTIK FILM",
+     "qty": 2.0,
+     "uom": "pcs",
+     "unit_price": 8000.0
+    },
+    {
+     "line_no": 7,
+     "item_code": null,
+     "description": "KABEL",
+     "qty": 6.0,
+     "uom": "pcs",
+     "unit_price": 8000.0
+    }
+   ]
+  },
+  "ref": {
+   "summary": {
+    "Solid wood m\u00b3": 0.0385735,
+    "Panel sheets": 1.0,
+    "Finishing m\u00b2 (exposed)": 0.63325,
+    "Cartons": 1.0,
+    "Carton m\u00b3": 0.176407,
+    "TIMBER": 837199.1177,
+    "FASTENERS": 67527.3188,
+    "PANELS": 225750.0,
+    "FINISHING MATERIALS": 24598.32026,
+    "SANDING MATERIALS": 8102.150162,
+    "SANDING LABOUR": 24998.93952,
+    "FINISHING LABOUR": 56204.0865,
+    "HARDWARE": 717200.0,
+    "PACKING": 178408.3,
+    "DIRECT COST": 2139988.233,
+    "MISC 5%": 106999.4116,
+    "OVERHEAD": 291948.1802,
+    "UNIT COST IDR": 2538935.825,
+    "Carton board m\u00b2 (6 sides)": 3.8278,
+    "PROJECT QTY \u00d7 UNIT COST": 231043160.1,
+    "Exposed m\u00b2, all faces (reference)": 2.2389
+   },
+   "solid": [
+    {
+     "tier": "A",
+     "rate": 20414405.66,
+     "cost": 312809.9379
+    },
+    {
+     "tier": "B",
+     "rate": 16715427.66,
+     "cost": 96531.59472
+    },
+    {
+     "tier": "A-CURVED",
+     "rate": 24483281.46,
+     "cost": 205745.2557
+    },
+    {
+     "tier": "A-CURVED",
+     "rate": 24483281.46,
+     "cost": 222112.3294
+    }
+   ],
+   "panels": [
+    {
+     "sheets": 1.0,
+     "rate": 215000.0,
+     "cost": 225750.0
+    }
+   ]
+  }
+ },
+ {
+  "tab": "AA-07A",
+  "input": {
+   "header": {
+    "item_code": "AA-07A",
+    "item_name": "FULL LENGTH MIRROR @ BEACH VILLA",
+    "project_qty": 30.0,
+    "finish_recipe": "NC NATURAL",
+    "flatpack": "N",
+    "overall_l": 1880.0,
+    "overall_w": 780.0,
+    "overall_h": 35.0
+   },
+   "boxes": [],
+   "solid": [
+    {
+     "line_no": 1,
+     "material": "MINDI",
+     "component": "FRAME PANJANG",
+     "l": 1880.0,
+     "w": 140.0,
+     "t": 35.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 2,
+     "material": "MINDI",
+     "component": "FRAME PENDEK",
+     "l": 780.0,
+     "w": 140.0,
+     "t": 35.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    }
+   ],
+   "panels": [
+    {
+     "line_no": 1,
+     "panel_type": "PLY-12-RAW",
+     "component": "PLYWOOD 12 MM",
+     "exposed_faces": 0.0,
+     "sheets_manual": 1.0
+    }
+   ],
+   "hardware": [
+    {
+     "line_no": 1,
+     "item_code": null,
+     "description": "HARDWARE GANTUNGAN",
+     "qty": 2.0,
+     "uom": "pcs",
+     "unit_price": 6000.0
+    },
+    {
+     "line_no": 2,
+     "item_code": null,
+     "description": "KACA 5 MM",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 345000.0
+    }
+   ]
+  },
+  "ref": {
+   "summary": {
+    "Solid wood m\u00b3": 0.026068,
+    "Panel sheets": 1.0,
+    "Finishing m\u00b2 (exposed)": 0.7448,
+    "Cartons": 1.0,
+    "Carton m\u00b3": 0.11808,
+    "TIMBER": 503887.7388,
+    "FASTENERS": 45635.01229,
+    "PANELS": 215000.0,
+    "FINISHING MATERIALS": 28931.4314,
+    "SANDING MATERIALS": 9529.382456,
+    "SANDING LABOUR": 29402.62164,
+    "FINISHING LABOUR": 66104.70371,
+    "HARDWARE": 357000.0,
+    "PACKING": 161319.6,
+    "DIRECT COST": 1416810.49,
+    "MISC 5%": 70840.52452,
+    "OVERHEAD": 193288.5602,
+    "UNIT COST IDR": 1680939.575,
+    "Carton board m\u00b2 (6 sides)": 3.5598,
+    "PROJECT QTY \u00d7 UNIT COST": 50428187.25,
+    "Exposed m\u00b2, all faces (reference)": 1.9012
+   },
+   "solid": [
+    {
+     "tier": "A",
+     "rate": 20414405.66,
+     "cost": 376115.0098
+    },
+    {
+     "tier": "B",
+     "rate": 16715427.66,
+     "cost": 127772.729
+    }
+   ],
+   "panels": [
+    {
+     "sheets": 1.0,
+     "rate": 215000.0,
+     "cost": 215000.0
+    }
+   ]
+  }
+ },
+ {
+  "tab": "LT-02",
+  "input": {
+   "header": {
+    "item_code": "LT 02",
+    "item_name": "WALL SCONCE @ VANITY",
+    "project_qty": 248.0,
+    "finish_recipe": "OTHER",
+    "flatpack": "N",
+    "overall_l": 245.0,
+    "overall_w": 245.0,
+    "overall_h": 135.0
+   },
+   "boxes": [],
+   "solid": [
+    {
+     "line_no": 1,
+     "material": "MINDI",
+     "component": "KAYU COVER LAMPU",
+     "l": 260.0,
+     "w": 260.0,
+     "t": 70.0,
+     "qty": 1.0,
+     "exposed": "Y",
+     "curved": "Y"
+    }
+   ],
+   "panels": [],
+   "hardware": [
+    {
+     "line_no": 1,
+     "item_code": null,
+     "description": "GLASS LAMP+FITTING",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 164995.0
+    },
+    {
+     "line_no": 2,
+     "item_code": null,
+     "description": "LABOR BUBUT",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 80000.0
+    },
+    {
+     "line_no": 3,
+     "item_code": null,
+     "description": "BULB 5 WATT",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 22000.0
+    }
+   ]
+  },
+  "ref": {
+   "summary": {
+    "Solid wood m\u00b3": 0.004732,
+    "Panel sheets": 0.0,
+    "Finishing m\u00b2 (exposed)": 0.0676,
+    "Cartons": 1.0,
+    "Carton m\u00b3": 0.014214375,
+    "TIMBER": 115854.8879,
+    "FASTENERS": 8283.906634,
+    "PANELS": 0.0,
+    "FINISHING MATERIALS": 2625.892538,
+    "SANDING MATERIALS": 864.9117267,
+    "SANDING LABOUR": 2668.658999,
+    "FINISHING LABOUR": 5999.836159,
+    "HARDWARE": 266995.0,
+    "PACKING": 16623.3375,
+    "DIRECT COST": 419916.4314,
+    "MISC 5%": 20995.82157,
+    "OVERHEAD": 57287.15518,
+    "UNIT COST IDR": 498199.4082,
+    "Carton board m\u00b2 (6 sides)": 0.36195,
+    "PROJECT QTY \u00d7 UNIT COST": 123553453.2,
+    "Exposed m\u00b2, all faces (reference)": 0.208
+   },
+   "solid": [
+    {
+     "tier": "A-CURVED",
+     "rate": 24483281.46,
+     "cost": 115854.8879
+    }
+   ],
+   "panels": []
+  }
+ },
+ {
+  "tab": "SG-01A",
+  "input": {
+   "header": {
+    "item_code": "SG-01A",
+    "item_name": "ARM CHAIR / LOUNGE CHAIR (costing 11 March 26)",
+    "project_qty": 120.0,
+    "finish_recipe": "OTHER",
+    "flatpack": "N",
+    "overall_l": 800.0,
+    "overall_w": 570.0,
+    "overall_h": 760.0
+   },
+   "boxes": [],
+   "solid": [
+    {
+     "line_no": 1,
+     "material": "TEAK",
+     "component": "KAKI DEPAN",
+     "l": 530.0,
+     "w": 45.0,
+     "t": 35.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 2,
+     "material": "TEAK",
+     "component": "KAKI BELAKANG",
+     "l": 700.0,
+     "w": 45.0,
+     "t": 35.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 3,
+     "material": "TEAK",
+     "component": "SUPPORT KAKI DEPAN BELAKANG",
+     "l": 710.0,
+     "w": 45.0,
+     "t": 30.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 4,
+     "material": "TEAK",
+     "component": "TANGANAN",
+     "l": 500.0,
+     "w": 45.0,
+     "t": 35.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 5,
+     "material": "TEAK",
+     "component": "SUDUT TANGAN DEPAN",
+     "l": 150.0,
+     "w": 130.0,
+     "t": 35.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "Y"
+    },
+    {
+     "line_no": 6,
+     "material": "TEAK",
+     "component": "SANDARAN",
+     "l": 440.0,
+     "w": 45.0,
+     "t": 35.0,
+     "qty": 1.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 7,
+     "material": "TEAK",
+     "component": "FRAME DUDUKAN BELAKNG",
+     "l": 700.0,
+     "w": 60.0,
+     "t": 35.0,
+     "qty": 1.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 8,
+     "material": "TEAK",
+     "component": "FRAME DUDUKAN SAMPING",
+     "l": 635.0,
+     "w": 40.0,
+     "t": 25.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 9,
+     "material": "TEAK",
+     "component": "SLAT",
+     "l": 620.0,
+     "w": 60.0,
+     "t": 20.0,
+     "qty": 8.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 10,
+     "material": "TEAK",
+     "component": "X SANDARAN",
+     "l": 850.0,
+     "w": 20.0,
+     "t": 20.0,
+     "qty": 8.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 11,
+     "material": "TEAK",
+     "component": "SUDUT SANDARAN",
+     "l": 179.0,
+     "w": 113.0,
+     "t": 45.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "Y"
+    }
+   ],
+   "panels": [],
+   "hardware": [
+    {
+     "line_no": 1,
+     "item_code": null,
+     "description": "BUSA DUDUKAN",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 79200.0
+    },
+    {
+     "line_no": 2,
+     "item_code": null,
+     "description": "DACRON AWUL SANDARAN",
+     "qty": 1.7,
+     "uom": "unit",
+     "unit_price": 30000.0
+    },
+    {
+     "line_no": 3,
+     "item_code": null,
+     "description": "DACRON LEMBARAN",
+     "qty": 1.5,
+     "uom": "unit",
+     "unit_price": 40000.0
+    },
+    {
+     "line_no": 4,
+     "item_code": null,
+     "description": "KAIN DUDUKAN + SANDARAN",
+     "qty": 1.8,
+     "uom": "unit",
+     "unit_price": 150000.0
+    },
+    {
+     "line_no": 5,
+     "item_code": null,
+     "description": "LABOR JOK",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 280000.0
+    },
+    {
+     "line_no": 6,
+     "item_code": null,
+     "description": "GLIDER",
+     "qty": 4.0,
+     "uom": "pcs",
+     "unit_price": 2500.0
+    }
+   ]
+  },
+  "ref": {
+   "summary": {
+    "Solid wood m\u00b3": 0.02265693,
+    "Panel sheets": 0.0,
+    "Finishing m\u00b2 (exposed)": 0.845254,
+    "Cartons": 1.0,
+    "Carton m\u00b3": 0.40992,
+    "TIMBER": 897451.7073,
+    "FASTENERS": 39663.54453,
+    "PANELS": 0.0,
+    "FINISHING MATERIALS": 32833.52325,
+    "SANDING MATERIALS": 10814.6464,
+    "SANDING LABOUR": 33368.2647,
+    "FINISHING LABOUR": 75020.49575,
+    "HARDWARE": 750200.0,
+    "PACKING": 181473.6,
+    "DIRECT COST": 2020825.782,
+    "MISC 5%": 101041.2891,
+    "OVERHEAD": 275691.4269,
+    "UNIT COST IDR": 2397558.498,
+    "Carton board m\u00b2 (6 sides)": 3.3448,
+    "PROJECT QTY \u00d7 UNIT COST": 287707019.7,
+    "Exposed m\u00b2, all faces (reference)": 2.784618
+   },
+   "solid": [
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 60461.65647
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 79855.01798
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 69424.97482
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 57039.29856
+    },
+    {
+     "tier": "A-CURVED",
+     "rate": 60363281.46,
+     "cost": 82395.87919
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 25097.29137
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 53236.67866
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 45993.59312
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 215554.2254
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 98505.96323
+    },
+    {
+     "tier": "A-CURVED",
+     "rate": 60363281.46,
+     "cost": 109887.1285
+    }
+   ],
+   "panels": []
+  }
+ },
+ {
+  "tab": "TB-02",
+  "input": {
+   "header": {
+    "item_code": "TB-02",
+    "item_name": "SIDE TABLE (base and leg only)",
+    "project_qty": 118.0,
+    "finish_recipe": "OTHER",
+    "flatpack": "Y",
+    "overall_l": 900.0,
+    "overall_w": 700.0,
+    "overall_h": 650.0
+   },
+   "boxes": [
+    {
+     "box_no": 1,
+     "contents": "2 tables per carton (old packing list, \"2 JADI 1\")",
+     "l": 610.0,
+     "w": 710.0,
+     "h": 800.0,
+     "qty": 0.5
+    }
+   ],
+   "solid": [
+    {
+     "line_no": 1,
+     "material": "TEAK",
+     "component": "KAYU UNTUK TIANG",
+     "l": 630.0,
+     "w": 120.0,
+     "t": 120.0,
+     "qty": 1.0,
+     "exposed": "Y",
+     "curved": "Y"
+    },
+    {
+     "line_no": 2,
+     "material": "TEAK",
+     "component": "KAYU BASE",
+     "l": 540.0,
+     "w": 420.0,
+     "t": 30.0,
+     "qty": 1.0,
+     "exposed": "Y",
+     "curved": "N"
+    }
+   ],
+   "panels": [],
+   "hardware": [
+    {
+     "line_no": 1,
+     "item_code": null,
+     "description": "LABOR BUBUT",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 30000.0
+    },
+    {
+     "line_no": 2,
+     "item_code": null,
+     "description": "PLAT UNDER TOP",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 100000.0
+    },
+    {
+     "line_no": 3,
+     "item_code": null,
+     "description": "LASER CUTTING",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 100000.0
+    },
+    {
+     "line_no": 4,
+     "item_code": null,
+     "description": "POWDER COAT PLAT UNDER TOP",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 45000.0
+    },
+    {
+     "line_no": 5,
+     "item_code": null,
+     "description": "GLIDER",
+     "qty": 4.0,
+     "uom": "pcs",
+     "unit_price": 2500.0
+    }
+   ]
+  },
+  "ref": {
+   "summary": {
+    "Solid wood m\u00b3": 0.015876,
+    "Panel sheets": 0.0,
+    "Finishing m\u00b2 (exposed)": 0.3024,
+    "Cartons": 0.5,
+    "Carton m\u00b3": 0.20475,
+    "TIMBER": 794025.4592,
+    "FASTENERS": 27792.75184,
+    "PANELS": 0.0,
+    "FINISHING MATERIALS": 11746.59621,
+    "SANDING MATERIALS": 3869.072576,
+    "SANDING LABOUR": 11937.90653,
+    "FINISHING LABOUR": 26839.50376,
+    "HARDWARE": 285000.0,
+    "PACKING": 90342.0,
+    "DIRECT COST": 1251553.29,
+    "MISC 5%": 62577.6645,
+    "OVERHEAD": 170743.3246,
+    "UNIT COST IDR": 1484874.279,
+    "Carton board m\u00b2 (6 sides)": 1.6635,
+    "PROJECT QTY \u00d7 UNIT COST": 175215164.9,
+    "Exposed m\u00b2, all faces (reference)": 0.8424
+   },
+   "solid": [
+    {
+     "tier": "A-CURVED",
+     "rate": 60363281.46,
+     "cost": 547615.6894
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 246409.7698
+    }
+   ],
+   "panels": []
+  }
+ },
+ {
+  "tab": "OV-501",
+  "input": {
+   "header": {
+    "item_code": "OV-501",
+    "item_name": "SHELF MINIBAR",
+    "project_qty": 89.0,
+    "finish_recipe": "OTHER",
+    "flatpack": "Y",
+    "overall_l": 588.0,
+    "overall_w": 325.0,
+    "overall_h": 960.0
+   },
+   "boxes": [
+    {
+     "box_no": 1,
+     "contents": "RAK (old packing row)",
+     "l": 560.0,
+     "w": 360.0,
+     "h": 120.0,
+     "qty": 1.0
+    },
+    {
+     "box_no": 2,
+     "contents": "TIANG (old packing row)",
+     "l": 1070.0,
+     "w": 80.0,
+     "h": 100.0,
+     "qty": 1.0
+    }
+   ],
+   "solid": [
+    {
+     "line_no": 1,
+     "material": "TEAK",
+     "component": "PAPAN RAK",
+     "l": 508.0,
+     "w": 325.0,
+     "t": 30.0,
+     "qty": 3.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 2,
+     "material": "TEAK",
+     "component": "TIANG",
+     "l": 960.0,
+     "w": 40.0,
+     "t": 30.0,
+     "qty": 4.0,
+     "exposed": "Y",
+     "curved": "N"
+    }
+   ],
+   "panels": [],
+   "hardware": [
+    {
+     "line_no": 1,
+     "item_code": null,
+     "description": "NANASAN + BAUT JCBC",
+     "qty": 4.0,
+     "uom": "pcs",
+     "unit_price": 3500.0
+    }
+   ]
+  },
+  "ref": {
+   "summary": {
+    "Solid wood m\u00b3": 0.019467,
+    "Panel sheets": 0.0,
+    "Finishing m\u00b2 (exposed)": 0.6489,
+    "Cartons": 2.0,
+    "Carton m\u00b3": 0.057048,
+    "TIMBER": 705005.7302,
+    "FASTENERS": 34079.20762,
+    "PANELS": 0.0,
+    "FINISHING MATERIALS": 25206.23769,
+    "SANDING MATERIALS": 8302.384903,
+    "SANDING LABOUR": 25616.75776,
+    "FINISHING LABOUR": 57593.10182,
+    "HARDWARE": 14000.0,
+    "PACKING": 64958.4,
+    "DIRECT COST": 934761.82,
+    "MISC 5%": 46738.091,
+    "OVERHEAD": 127525.006,
+    "UNIT COST IDR": 1109024.917,
+    "Carton board m\u00b2 (6 sides)": 1.4108,
+    "PROJECT QTY \u00d7 UNIT COST": 98703217.61,
+    "Exposed m\u00b2, all faces (reference)": 1.68774
+   },
+   "solid": [
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 538125.0395
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 166880.6906
+    }
+   ],
+   "panels": []
+  }
+ },
+ {
+  "tab": "AA-29",
+  "input": {
+   "header": {
+    "item_code": "AA-29",
+    "item_name": "FULL LENGTH MIRROR, EXISTING @ OVERWATER",
+    "project_qty": 91.0,
+    "finish_recipe": "OTHER",
+    "flatpack": "N",
+    "overall_l": 800.0,
+    "overall_w": 550.0,
+    "overall_h": 25.0
+   },
+   "boxes": [],
+   "solid": [
+    {
+     "line_no": 1,
+     "material": "MINDI",
+     "component": "FRAME PANJANG",
+     "l": 800.0,
+     "w": 70.0,
+     "t": 25.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 2,
+     "material": "MINDI",
+     "component": "FRAME PENDEK",
+     "l": 550.0,
+     "w": 70.0,
+     "t": 25.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 3,
+     "material": "MINDI",
+     "component": "LIS PANJANG",
+     "l": 660.0,
+     "w": 25.0,
+     "t": 10.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 4,
+     "material": "MINDI",
+     "component": "LIS PENDEK",
+     "l": 410.0,
+     "w": 25.0,
+     "t": 10.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    }
+   ],
+   "panels": [
+    {
+     "line_no": 1,
+     "panel_type": "PLY-6-RAW",
+     "component": "PLYWOOD 6 MM",
+     "l": 680.0,
+     "w": 430.0,
+     "t": 6.0,
+     "qty": 1.0,
+     "exposed_faces": 0.0
+    }
+   ],
+   "hardware": [
+    {
+     "line_no": 1,
+     "item_code": null,
+     "description": "KACA 5 MM CN GLASS",
+     "qty": 1.0,
+     "uom": "pcs",
+     "unit_price": 72450.0
+    },
+    {
+     "line_no": 2,
+     "item_code": null,
+     "description": "METAL HARDWARE",
+     "qty": 2.0,
+     "uom": "pcs",
+     "unit_price": 6000.0
+    }
+   ]
+  },
+  "ref": {
+   "summary": {
+    "Solid wood m\u00b3": 0.00526,
+    "Panel sheets": 0.1666666667,
+    "Finishing m\u00b2 (exposed)": 0.2425,
+    "Cartons": 1.0,
+    "Carton m\u00b3": 0.032214,
+    "TIMBER": 87923.14947,
+    "FASTENERS": 9208.230958,
+    "PANELS": 20125.0,
+    "FINISHING MATERIALS": 9419.806812,
+    "SANDING MATERIALS": 3102.678901,
+    "SANDING LABOUR": 9573.222002,
+    "FINISHING LABOUR": 21523.08089,
+    "HARDWARE": 84450.0,
+    "PACKING": 52659.6,
+    "DIRECT COST": 297984.769,
+    "MISC 5%": 14899.23845,
+    "OVERHEAD": 40652.61187,
+    "UNIT COST IDR": 353536.6194,
+    "Carton board m\u00b2 (6 sides)": 1.1771,
+    "PROJECT QTY \u00d7 UNIT COST": 32171832.36,
+    "Exposed m\u00b2, all faces (reference)": 0.6788
+   },
+   "solid": [
+    {
+     "tier": "B",
+     "rate": 16715427.66,
+     "cost": 46803.19744
+    },
+    {
+     "tier": "B",
+     "rate": 16715427.66,
+     "cost": 32177.19824
+    },
+    {
+     "tier": "B",
+     "rate": 16715427.66,
+     "cost": 5516.091127
+    },
+    {
+     "tier": "B",
+     "rate": 16715427.66,
+     "cost": 3426.66267
+    }
+   ],
+   "panels": [
+    {
+     "sheets": 0.1666666667,
+     "rate": 115000.0,
+     "cost": 20125.0
+    }
+   ]
+  }
+ },
+ {
+  "tab": "OV-505 B",
+  "input": {
+   "header": {
+    "item_code": "OV-505 B / BV 505 B",
+    "item_name": "SHELF BELOW VANITY COUNTER",
+    "project_qty": 236.0,
+    "finish_recipe": "OTHER",
+    "flatpack": "Y",
+    "overall_l": 1200.0,
+    "overall_w": 550.0,
+    "overall_h": 438.0
+   },
+   "boxes": [
+    {
+     "box_no": 1,
+     "contents": "KD flat, 1 package (old BOM \"PACKING 1 ITEM\")",
+     "l": 1220.0,
+     "w": 620.0,
+     "h": 50.0,
+     "qty": 1.0
+    }
+   ],
+   "solid": [
+    {
+     "line_no": 1,
+     "material": "TEAK",
+     "component": "KAKI",
+     "l": 450.0,
+     "w": 33.0,
+     "t": 33.0,
+     "qty": 4.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 2,
+     "material": "TEAK",
+     "component": "FRAME PANJANG",
+     "l": 1150.0,
+     "w": 33.0,
+     "t": 33.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 3,
+     "material": "TEAK",
+     "component": "FRAME PENDEK",
+     "l": 500.0,
+     "w": 33.0,
+     "t": 33.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 4,
+     "material": "TEAK",
+     "component": "SLAT",
+     "l": 720.0,
+     "w": 25.0,
+     "t": 16.0,
+     "qty": 17.0,
+     "exposed": "Y",
+     "curved": "N"
+    }
+   ],
+   "panels": [],
+   "hardware": [
+    {
+     "line_no": 1,
+     "item_code": null,
+     "description": "NANASAN + BAUT JCBC SST",
+     "qty": 4.0,
+     "uom": "pcs",
+     "unit_price": 3500.0
+    },
+    {
+     "line_no": 2,
+     "item_code": null,
+     "description": "PLAT SIKU SST",
+     "qty": 4.0,
+     "uom": "pcs",
+     "unit_price": 6000.0
+    }
+   ]
+  },
+  "ref": {
+   "summary": {
+    "Solid wood m\u00b3": 0.0104499,
+    "Panel sheets": 0.0,
+    "Finishing m\u00b2 (exposed)": 0.4743,
+    "Cartons": 1.0,
+    "Carton m\u00b3": 0.074844,
+    "TIMBER": 378447.5975,
+    "FASTENERS": 18293.74386,
+    "PANELS": 0.0,
+    "FINISHING MATERIALS": 18423.97679,
+    "SANDING MATERIALS": 6068.456094,
+    "SANDING LABOUR": 18724.03792,
+    "FINISHING LABOUR": 42096.48358,
+    "HARDWARE": 38000.0,
+    "PACKING": 91854.0,
+    "DIRECT COST": 611908.2957,
+    "MISC 5%": 30595.41479,
+    "OVERHEAD": 83479.67088,
+    "UNIT COST IDR": 725983.3814,
+    "Carton board m\u00b2 (6 sides)": 2.0088,
+    "PROJECT QTY \u00d7 UNIT COST": 171332078.0,
+    "Exposed m\u00b2, all faces (reference)": 1.707904
+   },
+   "solid": [
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 70989.48129
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 90708.78165
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 39438.60072
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 177310.7338
+    }
+   ],
+   "panels": []
+  }
+ },
+ {
+  "tab": "ID-OV-506",
+  "input": {
+   "header": {
+    "item_code": "ID-OV-506",
+    "item_name": "A/C COVER @OVERWATER (KECIL)",
+    "project_qty": 109.0,
+    "finish_recipe": "OTHER",
+    "flatpack": "N",
+    "overall_l": 1165.0,
+    "overall_w": 291.0,
+    "overall_h": 407.0
+   },
+   "boxes": [],
+   "solid": [
+    {
+     "line_no": 1,
+     "material": "TEAK",
+     "component": "KAYU SAMPING",
+     "l": 375.0,
+     "w": 275.0,
+     "t": 20.0,
+     "qty": 2.0,
+     "exposed": "Y",
+     "curved": "N"
+    },
+    {
+     "line_no": 2,
+     "material": "TEAK",
+     "component": "SLAT",
+     "l": 1165.0,
+     "w": 22.0,
+     "t": 16.0,
+     "qty": 17.0,
+     "exposed": "Y",
+     "curved": "N"
+    }
+   ],
+   "panels": [],
+   "hardware": []
+  },
+  "ref": {
+   "summary": {
+    "Solid wood m\u00b3": 0.01109636,
+    "Panel sheets": 0.0,
+    "Finishing m\u00b2 (exposed)": 0.64196,
+    "Cartons": 1.0,
+    "Carton m\u00b3": 0.178288185,
+    "TIMBER": 401859.4228,
+    "FASTENERS": 19425.44595,
+    "PANELS": 0.0,
+    "FINISHING MATERIALS": 24936.65642,
+    "SANDING MATERIALS": 8213.590711,
+    "SANDING LABOUR": 25342.78596,
+    "FINISHING LABOUR": 56977.14231,
+    "HARDWARE": 0.0,
+    "PACKING": 109006.3665,
+    "DIRECT COST": 645761.4107,
+    "MISC 5%": 32288.07053,
+    "OVERHEAD": 88098.08661,
+    "UNIT COST IDR": 766147.5678,
+    "Carton board m\u00b2 (6 sides)": 2.170894,
+    "PROJECT QTY \u00d7 UNIT COST": 83510084.89,
+    "Exposed m\u00b2, all faces (reference)": 1.981648
+   },
+   "solid": [
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 149388.6391
+    },
+    {
+     "tier": "B",
+     "rate": 36215427.66,
+     "cost": 252470.7837
+    }
+   ],
+   "panels": []
+  }
+ }
+]

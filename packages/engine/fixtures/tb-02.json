@@ -1,0 +1,29 @@
+{
+  "_source": "Old BOM REVISI BOM 21 MEI 26, rows 555-570 (export lines 7908-7923). Expected new estimate: docs/SPEC-costing-system.md C4.3 row TB-02. Old-BOM dimension columns are LENGTH/WIDTH/HEIGHT; the post is a 630 mm tall 120 x 120 section, entered here as l=630 w=120 t=120 so that T1 reads the length and F1 the face. KAYU UNTUK TIANG carries a separate LABOR BUBUT (lathe) line in the old BOM, so it is curved. SCREWS (19 @ 259 = 4,921) is dropped because fasteners are a derived rate under T3; the five remaining old lines (LABOR BUBUT 30,000, PLAT UNDER TOP 100,000, LASER CUTTING 100,000, POWDER COAT 45,000, GLIDER 4 @ 2,500) are the 285,000 bought-in + outside labour of C4.3. Box row 570 'PACKING SESUAI PL (2 JADI 1)' is two units per carton, so qty 0.5 per unit.",
+  "header": {
+    "item_code": "TB-02",
+    "item_name": "Side Table",
+    "project_qty": 118,
+    "finish_recipe": "OTHER",
+    "flatpack": "N",
+    "overall_l": 900,
+    "overall_w": 700,
+    "overall_h": 650,
+    "notes": "OWV+BV 89 + 29; old BOM note: DIMENSI BASE & LEG ONLY"
+  },
+  "boxes": [
+    { "box_no": 1, "contents": "PACKING SESUAI PL (2 JADI 1)", "l": 610, "w": 710, "h": 800, "qty": 0.5 }
+  ],
+  "solid": [
+    { "line_no": 1, "material": "TEAK", "component": "KAYU UNTUK TIANG", "l": 630, "w": 120, "t": 120, "qty": 1, "exposed": "Y", "curved": "Y", "note": "old BOM: BELAH 40, LABOR BUBUT" },
+    { "line_no": 2, "material": "TEAK", "component": "KAYU BASE", "l": 540, "w": 420, "t": 30, "qty": 1, "exposed": "Y", "curved": "N" }
+  ],
+  "panels": [],
+  "hardware": [
+    { "line_no": 1, "description": "LABOR BUBUT", "qty": 1, "uom": "ls", "unit_price": 30000, "note": "old BOM: outside lathe" },
+    { "line_no": 2, "description": "PLAT UNDER TOP (plat besi rosok)", "qty": 1, "uom": "pcs", "unit_price": 100000, "note": "old BOM: PRICE FROM ROSOK" },
+    { "line_no": 3, "description": "LASER CUTTING", "qty": 1, "uom": "ls", "unit_price": 100000, "note": "old BOM: PRICE FROM BUDI LASER CUTTING" },
+    { "line_no": 4, "description": "POWDER COAT PLAT UNDER TOP", "qty": 1, "uom": "ls", "unit_price": 45000 },
+    { "line_no": 5, "description": "GLIDER", "qty": 4, "uom": "pcs", "unit_price": 2500 }
+  ]
+}

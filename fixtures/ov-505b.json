@@ -1,0 +1,28 @@
+{
+  "_source": "docs/SPEC-costing-system.md C4.6, two-item stack test 30 Sep 2026. Old BOM source rows 692-706 of REVISI BOM 21 MEI 26.",
+  "header": {
+    "item_code": "OV-505 B",
+    "item_name": "SHELF BELOW VANITY COUNTER",
+    "project_qty": 236,
+    "finish_recipe": "OTHER",
+    "flatpack": "Y",
+    "overall_l": 1200,
+    "overall_w": 550,
+    "overall_h": 438,
+    "notes": "OV 178 + BV 58"
+  },
+  "boxes": [
+    { "box_no": 1, "contents": "KD flat, 1 package", "l": 1220, "w": 620, "h": 50, "qty": 1 }
+  ],
+  "solid": [
+    { "line_no": 1, "material": "TEAK", "component": "KAKI", "l": 450, "w": 33, "t": 33, "qty": 4, "exposed": "Y", "curved": "N", "note": "old BOM: BELAH 40" },
+    { "line_no": 2, "material": "TEAK", "component": "FRAME PANJANG", "l": 1150, "w": 33, "t": 33, "qty": 2, "exposed": "Y", "curved": "N", "note": "old BOM: BELAH 25" },
+    { "line_no": 3, "material": "TEAK", "component": "FRAME PENDEK", "l": 500, "w": 33, "t": 33, "qty": 2, "exposed": "Y", "curved": "N" },
+    { "line_no": 4, "material": "TEAK", "component": "SLAT", "l": 720, "w": 25, "t": 16, "qty": 17, "exposed": "Y", "curved": "N" }
+  ],
+  "panels": [],
+  "hardware": [
+    { "line_no": 1, "description": "NANASAN + BAUT JCBC SST", "qty": 4, "uom": "pcs", "unit_price": 3500, "note": "old BOM price" },
+    { "line_no": 2, "description": "PLAT SIKU SST", "qty": 4, "uom": "pcs", "unit_price": 6000, "note": "old BOM price" }
+  ]
+}

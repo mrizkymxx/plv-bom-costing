@@ -1,0 +1,20 @@
+{
+  "_source": "docs/SPEC-costing-system.md C1.3 NORMS tab rows 5-19, plus the two norms added 30 Sep on the LISTS tab (F10, F11).",
+  "TIER_A_MIN_LEN": 1000,
+  "TIER_D_MAX_VOL": 0.0005,
+  "TIER_D_MAX_LEN": 300,
+  "SHEET_L": 2440,
+  "SHEET_W": 1220,
+  "SHEET_KERF": 5,
+  "WASTE_REUSE_MIN": 0.25,
+  "OFFCUT_HANDLING": 0.05,
+  "CARTON_ADD": 40,
+  "CARTON_MIN_M2": 0.15,
+  "CARTON_BAND_B": 1.0,
+  "CARTON_BAND_C": 2.5,
+  "CARTON_BAND_D": 4.0,
+  "KD_PACK_FACTOR": 0.0,
+  "FIN_EXPOSED_ONLY": 0,
+  "NARROW_MAX_SECTION": 40,
+  "NARROW_MAX_LEN": 1500
+}

@@ -1,0 +1,11 @@
+{
+  "_source": "Same values as app/src/db/seed-data.ts PANEL_RATE_INPUTS (rates_version 2026-09-29). The app seed must match this file; kept here so the 12-item stack test needs no database.",
+  "sheet_L": 2.44,
+  "sheet_W": 1.22,
+  "glue_tape": 10424,
+  "ven_teak": 110000,
+  "ven_mindi": 20000,
+  "ven_len": 2.5,
+  "ven_labour": 57142.86,
+  "ply": { "3": 77500, "6": 115000, "9": 172500, "12": 215000, "15": 260000, "18": 295000, "24": 375000 }
+}

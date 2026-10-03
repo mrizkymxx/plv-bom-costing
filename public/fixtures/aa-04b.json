@@ -1,0 +1,33 @@
+{
+  "_source": "Old BOM REVISI BOM 21 MEI 26, rows 93-115 (export lines 7520-7540). Expected new estimate: docs/SPEC-costing-system.md C4.3 row AA-04B. Rulings applied from C4.5: #2 sizes entered longest side first, every component EXPOSED = Y, and CURVED = Y on the lamp housings and corner blocks of the vanity mirrors; #4 the old BOM gives this panel a size, so it is nested rather than entered as manual sheets; #5 glass, LED parts and hanging hardware stay at old-BOM prices on the bought-in lines; #6 an assembled item takes the template default carton, overall size + 40 mm, which replaces the old purchased box and packing lines. The old panel row reads 'PLYWOOD 12 MM PALM' but carries 9 in its HEIGHT column; the new estimate prices it as 12 mm (PLY-12-RAW, 215,000 per sheet), so t is 12 here. The plywood sits behind the mirror and takes no finish, hence exposed_faces 0. LABOR PRODUCTION, FINISHING NATURAL, BOX and PACKING of the old BOM are dropped because carpentry labour, the four finishing lines and the carton rule now derive them.",
+  "header": {
+    "item_code": "AA-04B",
+    "item_name": "VANITY MIRROR @ OVERWATER",
+    "project_qty": 91,
+    "finish_recipe": "NATURAL WD 02",
+    "flatpack": "N",
+    "overall_l": 1990,
+    "overall_w": 750,
+    "overall_h": 70,
+    "notes": "0WV; assembled, carton from the overall size"
+  },
+  "boxes": [],
+  "solid": [
+    { "line_no": 1, "material": "MINDI", "component": "FRAME PANJANG", "l": 1990, "w": 70, "t": 55, "qty": 2, "exposed": "Y", "curved": "N", "note": "old BOM: BELAH 65" },
+    { "line_no": 2, "material": "MINDI", "component": "FRAME PENDEK", "l": 750, "w": 70, "t": 55, "qty": 2, "exposed": "Y", "curved": "N", "note": "old BOM: BELAH 80 (SUDUT)" },
+    { "line_no": 3, "material": "MINDI", "component": "RUMAH LAMPU", "l": 245, "w": 245, "t": 70, "qty": 2, "exposed": "Y", "curved": "Y", "note": "C4.5 #2: lamp housing, turned" },
+    { "line_no": 4, "material": "MINDI", "component": "KAYU SUDUT", "l": 180, "w": 180, "t": 70, "qty": 4, "exposed": "Y", "curved": "Y", "note": "C4.5 #2: corner block, turned" }
+  ],
+  "panels": [
+    { "line_no": 1, "panel_type": "PLY-12-RAW", "component": "PLYWOOD 12 MM PALM", "l": 1990, "w": 750, "t": 12, "qty": 1, "exposed_faces": 0, "note": "old BOM 190,000 from Mojo; new estimate uses the rate card sheet price" }
+  ],
+  "hardware": [
+    { "line_no": 1, "description": "HARDWARE GANTUNGAN", "qty": 2, "uom": "pcs", "unit_price": 6000, "note": "old BOM: ESTIMATE FROM PANGESTU" },
+    { "line_no": 2, "description": "KACA 5 MM + BLASTING", "qty": 1, "uom": "pcs", "unit_price": 420200, "note": "old BOM: PRICE FROM CN GLASS" },
+    { "line_no": 3, "description": "LAMPU LED", "qty": 1, "uom": "pcs", "unit_price": 55000 },
+    { "line_no": 4, "description": "POWER SUPPLY", "qty": 1, "uom": "pcs", "unit_price": 116000 },
+    { "line_no": 5, "description": "SWITCH", "qty": 1, "uom": "pcs", "unit_price": 50000 },
+    { "line_no": 6, "description": "PLASTIK FILM", "qty": 2, "uom": "pcs", "unit_price": 8000 },
+    { "line_no": 7, "description": "KABEL", "qty": 6, "uom": "m", "unit_price": 8000 }
+  ]
+}
