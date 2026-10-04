@@ -9,10 +9,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "npm --workspace=@bom/engine test"
+    "test": "npm --workspace=@bom/engine test",
+    "typecheck": "tsc --noEmit && npm --workspace=@bom/engine run typecheck",
+    "verify": "npm run typecheck && npm test"
   },
   "dependencies": {
-    "@bom/engine": "file:./packages/engine",
+    "@bom/engine": "*",
     "@supabase/supabase-js": "^2.48.1",
     "lucide-react": "^0.475.0",
     "next": "^15.1.7",

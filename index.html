@@ -4,6 +4,8 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>PLV BOM Costing & Rate Card Cockpit</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+  <link rel="alternate icon" href="/favicon.ico"/>
   
   <!-- Material Symbols & Clean Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -13,7 +15,16 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Tailwind CSS -->
+  <!-- Tailwind CSS Console Notice Suppressor -->
+  <script>
+    (() => {
+      const _origWarn = console.warn;
+      console.warn = function(...args) {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+        _origWarn.apply(console, args);
+      };
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   
   <!-- Zero-dependency Core Engine -->
@@ -79,6 +90,10 @@
       background-color: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(4px);
     }
+    html, body {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
   </style>
 </head>
 
@@ -97,7 +112,7 @@
     <option value="I-00011">Engsel Pivot Custom (TBD / Kosong)</option>
     <option value="I-00012">Kunci Laci Central (TBD / Kosong)</option>
   </datalist>
-  <body class="bg-surface text-neutral-200 font-sans antialiased min-h-screen flex flex-col selection:bg-neutral-800 selection:text-white">
+  <body class="bg-surface text-neutral-200 font-sans antialiased min-h-screen flex flex-col selection:bg-neutral-800 selection:text-white w-full overflow-x-hidden">
 
   <!-- TOP HEADER -->
   <header class="border-b border-border-subtle bg-surface-card/90 backdrop-blur-md sticky top-0 z-40">
@@ -1411,16 +1426,16 @@
           <span class="material-symbols-outlined text-[18px]">close</span>
         </button>
       </div>
-      <div class="flex flex-col gap-3 text-xs">
+      <form id="supabaseForm" onsubmit="event.preventDefault(); saveSupabaseConfig();" autocomplete="on" class="flex flex-col gap-3 text-xs">
         <div>
-          <span class="text-text-muted text-[11px] block">Project URL Supabase:</span>
-          <input type="text" id="supabaseUrlInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white font-mono text-xs focus:border-border-strong" placeholder="https://xyz.supabase.co" />
+          <label for="supabaseUrlInput" class="text-text-muted text-[11px] block">Project URL Supabase:</label>
+          <input type="text" id="supabaseUrlInput" name="supabase_url" autocomplete="username" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white font-mono text-xs focus:border-border-strong" placeholder="https://xyz.supabase.co" />
         </div>
         <div>
-          <span class="text-text-muted text-[11px] block">Anon / Public API Key:</span>
-          <input type="password" id="supabaseKeyInput" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white font-mono text-xs focus:border-border-strong" placeholder="eyJhbGciOi..." />
+          <label for="supabaseKeyInput" class="text-text-muted text-[11px] block">Anon / Public API Key:</label>
+          <input type="password" id="supabaseKeyInput" name="supabase_key" autocomplete="current-password" class="mt-1 w-full bg-surface-elevated border border-border-subtle rounded px-2.5 py-1 text-white font-mono text-xs focus:border-border-strong" placeholder="eyJhbGciOi..." />
         </div>
-      </div>
+      </form>
       <div class="flex items-center justify-end gap-2 pt-2 border-t border-border-subtle">
         <button onclick="clearSupabaseConfig()" class="px-3 py-1.5 rounded bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-xs text-accent-rose">
           Putus Cloud

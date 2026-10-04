@@ -3,14 +3,18 @@
 -- ============================================================================
 
 -- 1. Table: Rate Card Items (27 Base Figures + Derived Rates + Custom Parameters)
+-- Implements Rule 7: Never update in-place; track valid_from, valid_to, and version.
 CREATE TABLE IF NOT EXISTS public.rate_card_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    kode TEXT NOT NULL UNIQUE,
+    kode TEXT NOT NULL,
+    version INTEGER DEFAULT 1 NOT NULL,
     kategori TEXT NOT NULL,
     nama TEXT NOT NULL,
     satuan TEXT NOT NULL,
     nilai NUMERIC NOT NULL,
     is_custom BOOLEAN DEFAULT false,
+    valid_from TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    valid_to TIMESTAMPTZ,
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -62,13 +66,19 @@ ALTER TABLE public.hardware_catalog ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bom_items ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow public read rate_card_items" ON public.rate_card_items FOR SELECT USING (true);
-CREATE POLICY "Allow public write rate_card_items" ON public.rate_card_items FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow authenticated insert rate_card_items" ON public.rate_card_items FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated update rate_card_items" ON public.rate_card_items FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated delete rate_card_items" ON public.rate_card_items FOR DELETE USING (auth.role() = 'authenticated');
 
 CREATE POLICY "Allow public read hardware_catalog" ON public.hardware_catalog FOR SELECT USING (true);
-CREATE POLICY "Allow public write hardware_catalog" ON public.hardware_catalog FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow authenticated insert hardware_catalog" ON public.hardware_catalog FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated update hardware_catalog" ON public.hardware_catalog FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated delete hardware_catalog" ON public.hardware_catalog FOR DELETE USING (auth.role() = 'authenticated');
 
 CREATE POLICY "Allow public read bom_items" ON public.bom_items FOR SELECT USING (true);
-CREATE POLICY "Allow public write bom_items" ON public.bom_items FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow authenticated insert bom_items" ON public.bom_items FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated update bom_items" ON public.bom_items FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated delete bom_items" ON public.bom_items FOR DELETE USING (auth.role() = 'authenticated');
 
 -- 5. Seed Benchmark Rates (Keputusan Owner 2 Okt: Jati 6M, Mindi 3M, Fin 6-Muka)
 INSERT INTO public.rate_card_items (kode, kategori, nama, satuan, nilai, is_custom) VALUES

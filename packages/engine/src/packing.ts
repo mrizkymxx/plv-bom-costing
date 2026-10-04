@@ -41,18 +41,35 @@ export function computePacking(
 
   // TOTAL row 15: the sheet tests D11 — the first box row. Blank -> one carton
   // built from the overall size + CARTON_ADD on each dimension.
-  const firstRowFilled = boxes.length > 0 && filled(boxes[0]?.l);
+  const firstRowFilled = boxes.length > 0 && boxes.some((b) => filled(b.l));
 
   if (!firstRowFilled) {
-    const l = (header.overall_l ?? 0) + add;
-    const w = (header.overall_w ?? 0) + add;
-    const h = (header.overall_h ?? 0) + add;
-    const hasOverall = filled(header.overall_l);
+    const hasOverall =
+      filled(header.overall_l) &&
+      filled(header.overall_w) &&
+      filled(header.overall_h) &&
+      header.overall_l > 0 &&
+      header.overall_w > 0 &&
+      header.overall_h > 0;
+
+    if (!hasOverall || header.overall_l === undefined || header.overall_w === undefined || header.overall_h === undefined) {
+      return {
+        rows: [],
+        cartons: 0,
+        m2: 0,
+        m3: 0,
+        from_overall: true,
+      };
+    }
+
+    const l = header.overall_l + add;
+    const w = header.overall_w + add;
+    const h = header.overall_h + add;
     return {
       rows: [],
       cartons: 1,
-      m2: hasOverall ? (2 * (l * w + l * h + w * h)) / 1e6 : 0,
-      m3: hasOverall ? (l * w * h) / 1e9 : 0,
+      m2: (2 * (l * w + l * h + w * h)) / 1e6,
+      m3: (l * w * h) / 1e9,
       from_overall: true,
     };
   }
@@ -72,6 +89,7 @@ export function computePacking(
  *   + m3 x PACK_LAB
  */
 export function packingCost(agg: PackingAggregate, rates: Rates, norms: Norms): number {
+  if (agg.cartons === 0) return 0;
   const board =
     agg.m2 < normOf(norms, "CARTON_MIN_M2")
       ? rateOf(rates, "GRP_A") * agg.cartons

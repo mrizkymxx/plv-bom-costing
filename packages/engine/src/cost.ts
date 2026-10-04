@@ -119,7 +119,11 @@ export function costItem(
   // labour, so it is excluded from this sum (its tier rate already excludes
   // LAB_CARP — see computeSolid).
   const carpentry_labour = solidLines.reduce(
-    (s, l, i) => s + (l.worked_outside ? 0 : (solid[i]?.vol_m3 ?? 0)),
+    (s, l, i) => {
+      const r = solid[i];
+      if (!r || l.worked_outside || r.check !== "OK" || r.cost === null) return s;
+      return s + (r.vol_m3 ?? 0);
+    },
     0,
   ) * rateOf(rates, "LAB_CARP");
   const timber_wood_processing = timber - carpentry_labour;

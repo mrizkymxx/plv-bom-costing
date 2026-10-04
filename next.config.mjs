@@ -1,12 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
-  rewrites: async () => [
-    {
-      source: '/',
-      destination: '/index.html'
-    }
-  ]
+  transpilePackages: ['@bom/engine'],
 };
 
 export default nextConfig;

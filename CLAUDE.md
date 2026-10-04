@@ -9,9 +9,9 @@ Standalone webapp. No relation to any other repo. Goal: cost furniture items fro
 Do NOT read File/PLV-BOM-Complete-Export-2026-09-30.md (2.6 MB; the docs above are the relevant cut).
 
 ## Stack
-- npm workspaces: `packages/engine` (pure TS, zero deps, no I/O) and `app` (Next.js 15 App Router, TS strict, Tailwind v4, Drizzle + postgres-js)
-- Postgres 16 in docker: `docker compose up -d`; DSN `postgres://bom:bom@localhost:5433/bom`
-- Tests: Vitest. Run `npm test` at root (engine) and `npm run verify` (typecheck + test).
+- npm workspaces: `packages/engine` (pure TS, zero deps, no I/O) and root webapp (Next.js 15 App Router, TS strict, Tailwind CSS, Supabase client)
+- Database & Sync: Supabase PostgreSQL (schema in `supabase_schema.sql`, client in `src/lib/supabase.ts`)
+- Tests & Verification: Vitest. Run `npm test` at root (engine), `npm run verify` (typecheck + test), and `npm run build` (production build).
 - Windows host, bash (git-bash). Use forward-slash paths. No `python3`; `python` exists.
 
 ## Non-negotiable rules

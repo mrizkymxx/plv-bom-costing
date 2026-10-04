@@ -18,6 +18,30 @@ describe("K1 — carton sizes (C2.4)", () => {
     expect(agg.m3).toBeCloseTo((1240 * 590 * 478) / 1e9, 12);
   });
 
+  test("missing overall dimensions with empty boxes return 0 cartons and 0 cost", () => {
+    const emptyHeader: Header = { item_code: "EMPTY" };
+    const agg = computePacking(emptyHeader, [], norms);
+    expect(agg.cartons).toBe(0);
+    expect(agg.m2).toBe(0);
+    expect(agg.m3).toBe(0);
+    expect(packingCost(agg, rates, norms)).toBe(0);
+
+    const partialHeader: Header = { item_code: "PARTIAL", overall_l: 1000 };
+    const aggPartial = computePacking(partialHeader, [], norms);
+    expect(aggPartial.cartons).toBe(0);
+    expect(packingCost(aggPartial, rates, norms)).toBe(0);
+  });
+
+  test("first box row blank but second row filled calculates boxes", () => {
+    const agg = computePacking(header, [
+      { l: undefined as unknown as number, w: 200, h: 100 },
+      { l: 500, w: 300, h: 200, qty: 1 },
+    ], norms);
+    expect(agg.from_overall).toBe(false);
+    expect(agg.cartons).toBe(1);
+    expect(agg.rows.length).toBe(1);
+  });
+
   test("CARTON_ADD is added once per dimension, not per side", () => {
     const agg = computePacking(header, [{ l: 1600, w: 900, h: 60, qty: 1 }], norms);
     expect(agg.rows[0]).toMatchObject({ carton_l: 1640, carton_w: 940, carton_h: 100 });
