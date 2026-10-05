@@ -38,3 +38,4 @@ packages/engine/test/*.js
 
 # qa artifacts
 dogfood-output/
+extracted_items.json
